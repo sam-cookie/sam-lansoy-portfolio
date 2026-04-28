@@ -58,7 +58,7 @@ const PROJECTS: Project[] = [
     title: 'UPV Org Hub',
     description:
       'A web app for UPV constituents to explore, discover, and manage the various student organizations within the University of the Philippines Visayas.\n Now features Hubby — a friendly chatbot assistant that helps users find orgs, answer FAQs, and help with CRUD operations.',
-    tech: ['Laravel', 'Blade', 'PHP '],
+    tech: ['Laravel', 'Blade', 'PHP ', 'PostgreSQL'],
     image: '/project/upvorghub.png',
     github: 'https://github.com/CMSC129-LABS/CMSC129-Lab3-ContrerasJL_LansoySLD',
     type: 'web',
