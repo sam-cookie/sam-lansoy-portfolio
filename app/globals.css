@@ -1,20 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap');
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --bg:        #131813;
-  --bg2:       #0c100c;
-  --surface:   #050e06;
-  --border:    rgba(255, 255, 255, 0.07);
-  --cream:     #ffffff;
-  --cream-dim: #ffffff;
-  --gold:      #c9a96e;
-  --gold-dim:  rgba(201, 169, 110, 0.15);
-  --muted:     #6a6560;
-  --white:     #f5f0e8;
+  --bg: #FAFAF7;
+  --bg-alt: #F2F0ED;
+  --text: #18181B;
+  --text-mid: #52525B;
+  --text-muted: #A1A1AA;
+  --accent: #7C3AED;
+  --accent-hover: #6D28D9;
+  --accent-soft: rgba(124, 58, 237, 0.06);
+  --accent-border: rgba(124, 58, 237, 0.2);
+  --border: rgba(0, 0, 0, 0.06);
 }
 
 *, *::before, *::after {
@@ -27,33 +23,25 @@ html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--bg);
-  color: var(--cream);
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 300;
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  font-weight: 400;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-::-webkit-scrollbar        { width: 4px; }
-::-webkit-scrollbar-track  { background: var(--bg); }
-::-webkit-scrollbar-thumb  { background: var(--gold); border-radius: 2px; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
 
-::selection { background: var(--gold-dim); color: var(--gold); }
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.35;
+::selection {
+  background: rgba(124, 58, 237, 0.15);
+  color: var(--accent-hover);
 }
 
-@keyframes blobFloat {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(18px, -18px) scale(1.04); }
-  66%       { transform: translate(-10px, 10px) scale(0.97); }
+@keyframes cursorPulse {
+  0%, 45% { opacity: 1; }
+  50%, 95% { opacity: 0; }
+  100% { opacity: 1; }
 }

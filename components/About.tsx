@@ -3,11 +3,11 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 
-/* ── Data ──────────────────────────────────────────── */
+/* -- Data ------------------------------------------------ */
 const STATS = [
-  { num: '2+',     label: 'years of\nexperience' },
-  { num: '10+',    label: 'projects\ncompleted' },
-  { num: '89k+',   label: 'hours of\nmusic' },
+  { num: '2+', label: 'years of experience' },
+  { num: '10+', label: 'projects completed' },
+  { num: '89k+', label: 'hours of music' },
 ]
 
 const TECH = [
@@ -25,97 +25,176 @@ const TECH = [
   },
 ]
 
-/* ── Animation helpers ─────────────────────────────── */
+/* -- Colors ---------------------------------------------- */
+const C = {
+  bgAlt: '#F2F0ED',
+  text: '#18181B',
+  textMid: '#52525B',
+  textMuted: '#A1A1AA',
+  accent: '#7C3AED',
+  accentHover: '#6D28D9',
+  accentSoft: 'rgba(124,58,237,0.06)',
+  accentBorder: 'rgba(124,58,237,0.2)',
+  border: 'rgba(0,0,0,0.06)',
+}
+
+/* -- Fonts ----------------------------------------------- */
+const F = {
+  serif: "'Instrument Serif', Georgia, serif",
+  body: "'Sora', sans-serif",
+  mono: "'JetBrains Mono', monospace",
+}
+
+/* -- Animation helpers ----------------------------------- */
 const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
+  initial: { opacity: 0, y: 24 } as const,
+  animate: { opacity: 1, y: 0 } as const,
   transition: { duration: 0.65, ease: [0.25, 0.1, 0.25, 1], delay },
 })
 
-/* ── Component ─────────────────────────────────────── */
+/* -- Component ------------------------------------------- */
 export default function About() {
   const ref = useRef<HTMLElement>(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section
-      id="about"
-      ref={ref}
-      style={{
-        padding: '6rem clamp(1.5rem, 6vw, 5rem)',
-        background: 'var(--bg2)',
-      }}
-    >
-      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+    <>
+      <style>{`
+        @media (max-width: 640px) {
+          .about-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
 
-        {/* Section label + title */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <p style={styles.label}>// about me</p>
-          <h2 style={styles.title}>About Me</h2>
-        </motion.div>
+      <section
+        id="about"
+        ref={ref}
+        style={{
+          padding: '7rem clamp(1.5rem, 6vw, 5rem)',
+          background: C.bgAlt,
+        }}
+      >
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
-        {/* ── Stats row ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.65, delay: 0.15 }}
-          style={styles.statsRow}
-        >
-          {STATS.map((s, i) => (
-            <div key={i} style={styles.stat}>
-              <span style={styles.statNum}>{s.num}</span>
-              <span style={styles.statLabel}>{s.label}</span>
-            </div>
-          ))}
-        </motion.div>
-
-        <Divider />
-
-        {/* ── Main grid: bio | tech ── */}
-        <div style={styles.grid}>
-
-          {/* Bio */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
+          {/* Section title */}
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.65, delay: 0.25 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              fontFamily: F.serif,
+              fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+              fontWeight: 400,
+              color: C.text,
+              lineHeight: 1.1,
+              margin: 0,
+            }}
           >
-            <p style={styles.bio}>
-              I'm Sam, a Computer Science student with a passion for crafting
-              full-stack applications from the ground up. I love the challenge of
-              taking a rough idea and turning it into something real, functional,
-              and thoughtfully designed.
-            </p>
-            <p style={{ ...styles.bio, marginTop: '1rem' }}>
-              Whether it's building backend APIs, designing fun and intuitive interfaces,
-              or developing mobile apps — I work across the full stack, but is more comfortable in frontend, and am
-              always exploring what I can build next.
-            </p>
-            <a
-              href="https://github.com/sam-cookie"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={styles.cta}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget as HTMLAnchorElement
-                el.style.background = 'var(--gold-dim)'
-                el.style.borderColor = 'var(--gold)'
-                el.style.color = 'var(--gold)'
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget as HTMLAnchorElement
-                el.style.background = 'transparent'
-                el.style.borderColor = 'rgba(201,169,110,0.3)'
-                el.style.color = 'var(--gold)'
-              }}
+            About Me
+          </motion.h2>
+
+          {/* Two-column layout: bio + stats */}
+          <div
+            className="about-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              gap: '4rem',
+              marginTop: '3rem',
+              alignItems: 'start',
+            }}
+          >
+            {/* LEFT - Bio */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.65, delay: 0.1 }}
             >
-              view my github ↗
-            </a>
-          </motion.div>
+              <p style={styles.bio}>
+                I'm Sam, a Computer Science student with a passion for crafting
+                full-stack applications from the ground up. I love the challenge of
+                taking a rough idea and turning it into something real, functional,
+                and thoughtfully designed.
+              </p>
+              <p style={{ ...styles.bio, marginTop: '1rem' }}>
+                Whether it's building backend APIs, designing fun and intuitive
+                interfaces, or developing mobile apps — I work across the full
+                stack, but am more comfortable in frontend, and am always exploring
+                what I can build next.
+              </p>
+
+              {/* GitHub link */}
+              <a
+                href="https://github.com/sam-cookie"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={styles.ghLink}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget
+                  el.style.background = C.accentSoft
+                  el.style.borderColor = C.accent
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget
+                  el.style.background = 'transparent'
+                  el.style.borderColor = C.accentBorder
+                }}
+              >
+                View my GitHub &rarr;
+              </a>
+            </motion.div>
+
+            {/* RIGHT - Stats */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {STATS.map((s, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.65, delay: 0.15 + i * 0.08 }}
+                  style={{
+                    borderLeft: `2px solid ${C.accent}`,
+                    paddingLeft: '1.2rem',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: F.serif,
+                      fontSize: 'clamp(1.8rem, 3vw, 2.2rem)',
+                      fontWeight: 400,
+                      color: C.accent,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {s.num}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: F.mono,
+                      fontSize: '0.7rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      color: C.textMuted,
+                      marginTop: '0.25rem',
+                    }}
+                  >
+                    {s.label}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div
+            style={{
+              width: '100%',
+              height: 1,
+              background: `linear-gradient(90deg, transparent, ${C.border} 20%, ${C.border} 80%, transparent)`,
+              margin: '3rem 0',
+            }}
+          />
 
           {/* Tech stack */}
           <div>
@@ -124,162 +203,67 @@ export default function About() {
                 key={group.category}
                 initial={{ opacity: 0, y: 24 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.65, delay: 0.3 + gi * 0.1 }}
-                style={{ marginBottom: gi < TECH.length - 1 ? '2rem' : 0 }}
+                transition={{ duration: 0.65, delay: 0.35 + gi * 0.1 }}
+                style={{
+                  marginBottom: gi < TECH.length - 1 ? '1.5rem' : 0,
+                }}
               >
-                <p style={styles.techCat}>{group.category}</p>
-                <div style={styles.tagRow}>
-                  {group.items.map((item) => (
-                    <TechTag key={item} label={item} />
-                  ))}
-                </div>
+                <p
+                  style={{
+                    fontFamily: F.mono,
+                    fontSize: '0.68rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.15em',
+                    color: C.textMuted,
+                    marginBottom: '0.6rem',
+                    marginTop: 0,
+                  }}
+                >
+                  {group.category}
+                </p>
+                <p
+                  style={{
+                    fontFamily: F.body,
+                    fontSize: '0.85rem',
+                    color: C.textMid,
+                    lineHeight: 1.8,
+                    margin: 0,
+                  }}
+                >
+                  {group.items.join(' · ')}
+                </p>
               </motion.div>
             ))}
           </div>
+
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   )
 }
 
-/* ── Sub-components ─────────────────────────────────── */
-
-function TechTag({ label }: { label: string }) {
-  return (
-    <span
-      style={styles.tag}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLSpanElement
-        el.style.borderColor = 'rgba(201,169,110,0.45)'
-        el.style.color = 'var(--gold)'
-        el.style.background = 'var(--gold-dim)'
-        el.style.transform = 'translateY(-2px)'
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLSpanElement
-        el.style.borderColor = 'var(--border)'
-        el.style.color = 'var(--cream-dim)'
-        el.style.background = 'var(--surface)'
-        el.style.transform = 'translateY(0)'
-      }}
-    >
-      {label}
-    </span>
-  )
-}
-
-function Divider() {
-  return (
-    <div
-      style={{
-        width: '100%',
-        height: '1px',
-        background:
-          'linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent)',
-        margin: '2.5rem 0',
-      }}
-    />
-  )
-}
-
-/* ── Styles object ─────────────────────────────────── */
+/* -- Styles ---------------------------------------------- */
 const styles: Record<string, React.CSSProperties> = {
-  label: {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.68rem',
-    letterSpacing: '0.2em',
-    textTransform: 'uppercase',
-    color: 'var(--gold)',
-    marginBottom: '0.6rem',
-  },
-  title: {
-    fontFamily: "'Cormorant Garamond', Georgia, serif",
-    fontSize: 'clamp(2rem, 5vw, 3.2rem)',
-    fontWeight: 300,
-    color: 'var(--white)',
-    lineHeight: 1.1,
-  },
-  statsRow: {
-    display: 'flex',
-    gap: '0',
-    marginTop: '2.5rem',
-    flexWrap: 'wrap' as const,
-  },
-  stat: {
-    flex: '1 1 120px',
-    padding: '0 2rem',
-    borderLeft: '1px solid var(--border)',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.2rem',
-  },
-  statNum: {
-    fontFamily: "'Cormorant Garamond', Georgia, serif",
-    fontSize: 'clamp(2rem, 4vw, 2rem)',
-    fontWeight: 300,
-    color: 'var(--gold)',
-    lineHeight: 1,
-  },
-  statLabel: {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '1rem',
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    color: 'var(--muted)',
-    whiteSpace: 'pre-line' as const,
-    lineHeight: 1.5,
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '4rem',
-    alignItems: 'start',
-  },
   bio: {
-    fontSize: '0.88rem',
-    color: 'var(--cream-dim)',
-    lineHeight: 1.9,
+    fontFamily: F.body,
+    fontSize: '0.9rem',
+    color: C.textMid,
+    lineHeight: 1.85,
+    fontWeight: 300,
+    margin: 0,
   },
-  cta: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '0.4rem',
+  ghLink: {
+    display: 'inline-block',
     marginTop: '1.8rem',
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.72rem',
+    fontFamily: F.mono,
+    fontSize: '0.75rem',
     letterSpacing: '0.06em',
-    color: 'var(--gold)',
+    color: C.accent,
     textDecoration: 'none',
-    border: '1px solid rgba(201,169,110,0.3)',
+    border: `1px solid ${C.accentBorder}`,
     padding: '0.5rem 1.1rem',
     borderRadius: '2px',
     background: 'transparent',
     transition: 'all 0.3s',
-  },
-  techCat: {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.64rem',
-    letterSpacing: '0.18em',
-    textTransform: 'uppercase',
-    color: 'var(--muted)',
-    marginBottom: '0.75rem',
-    paddingBottom: '0.5rem',
-    borderBottom: '1px solid var(--border)',
-  },
-  tagRow: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: '0.45rem',
-  },
-  tag: {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.72rem',
-    color: 'var(--cream-dim)',
-    background: 'var(--surface)',
-    border: '1px solid var(--border)',
-    padding: '0.28rem 0.7rem',
-    borderRadius: '2px',
-    cursor: 'default',
-    transition: 'all 0.25s ease',
   },
 }

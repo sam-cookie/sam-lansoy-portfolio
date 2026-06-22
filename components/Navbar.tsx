@@ -10,8 +10,8 @@ const NAV_LINKS = [
 ]
 
 export default function Navbar() {
-  const [active, setActive]   = useState('home')
-  const [menuOpen, setMenu]   = useState(false)
+  const [active, setActive]     = useState('home')
+  const [menuOpen, setMenu]     = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -53,7 +53,9 @@ export default function Navbar() {
     <nav
       style={{
         position: 'fixed',
-        top: 0, left: 0, right: 0,
+        top: 0,
+        left: 0,
+        right: 0,
         zIndex: 100,
         height: '64px',
         display: 'flex',
@@ -61,24 +63,24 @@ export default function Navbar() {
         justifyContent: 'space-between',
         padding: '0 clamp(1.5rem, 6vw, 5rem)',
         background: scrolled
-          ? 'rgba(12,12,11,0.85)'
-          : 'rgba(12,12,11,0.4)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${scrolled ? 'rgba(255,255,255,0.07)' : 'transparent'}`,
-        transition: 'background 0.4s ease, border-color 0.4s ease',
+          ? 'rgba(250,250,247,0.9)'
+          : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
+        borderBottom: `1px solid ${scrolled ? 'rgba(0,0,0,0.06)' : 'transparent'}`,
+        transition: 'background 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease',
       }}
     >
-      {/* Logo */}
+      {/* Logo / Name */}
       <a
         href="#home"
         onClick={(e) => { e.preventDefault(); handleNav('#home') }}
         style={{
-          fontFamily: "'Cormorant Garamond', Georgia, serif",
+          fontFamily: "'Instrument Serif', Georgia, serif",
           fontSize: '1.05rem',
           fontStyle: 'italic',
           fontWeight: 400,
-          color: 'var(--cream)',
+          color: '#18181B',
           textDecoration: 'none',
           letterSpacing: '0.02em',
         }}
@@ -88,12 +90,14 @@ export default function Navbar() {
 
       {/* Desktop links */}
       <ul
+        className="desktop-nav"
         style={{
           display: 'flex',
           gap: '2.5rem',
           listStyle: 'none',
+          margin: 0,
+          padding: 0,
         }}
-        className="desktop-nav"
       >
         {NAV_LINKS.map((link) => {
           const id = link.href.replace('#', '')
@@ -106,12 +110,12 @@ export default function Navbar() {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Sora', sans-serif",
                   fontSize: '0.75rem',
                   fontWeight: 400,
-                  letterSpacing: '0.12em',
-                  textTransform: ';lowercase',
-                  color: isActive ? 'var(--gold)' : 'var(--cream-dim)',
+                  letterSpacing: '0.06em',
+                  textTransform: 'lowercase',
+                  color: isActive ? '#7C3AED' : '#A1A1AA',
                   padding: '2px 0',
                   position: 'relative',
                   transition: 'color 0.3s',
@@ -121,10 +125,11 @@ export default function Navbar() {
                 <span
                   style={{
                     position: 'absolute',
-                    bottom: 0, left: 0,
+                    bottom: 0,
+                    left: 0,
                     height: '1px',
                     width: isActive ? '100%' : '0%',
-                    background: 'var(--gold)',
+                    background: '#7C3AED',
                     transition: 'width 0.3s ease',
                   }}
                 />
@@ -156,7 +161,7 @@ export default function Navbar() {
               display: 'block',
               width: '22px',
               height: '1px',
-              background: 'var(--cream-dim)',
+              background: '#52525B',
               transition: 'all 0.3s',
             }}
           />
@@ -169,10 +174,12 @@ export default function Navbar() {
           style={{
             position: 'absolute',
             top: '64px',
-            left: 0, right: 0,
-            background: 'rgba(12,12,11,0.97)',
+            left: 0,
+            right: 0,
+            background: 'rgba(250,250,247,0.97)',
             backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid var(--border)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(0,0,0,0.06)',
             padding: '1.5rem clamp(1.5rem, 6vw, 5rem)',
             display: 'flex',
             flexDirection: 'column',
@@ -189,11 +196,12 @@ export default function Navbar() {
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Sora', sans-serif",
                   fontSize: '0.8rem',
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  color: active === id ? 'var(--gold)' : 'var(--cream-dim)',
+                  fontWeight: 400,
+                  letterSpacing: '0.06em',
+                  textTransform: 'lowercase',
+                  color: active === id ? '#7C3AED' : '#A1A1AA',
                   textAlign: 'left',
                   transition: 'color 0.3s',
                 }}

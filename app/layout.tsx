@@ -3,8 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Sam Lansoy — Portfolio',
-  description:
-    'Create with me.',
+  description: 'Full-stack developer, CS student, builder.',
 }
 
 export default function RootLayout({

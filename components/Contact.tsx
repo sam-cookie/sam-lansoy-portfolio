@@ -46,15 +46,15 @@ export default function Contact() {
     width: '100%',
     background: 'transparent',
     border: 'none',
-    borderBottom: `1px solid ${focusedField === name ? 'var(--gold)' : 'rgba(255,255,255,0.12)'}`,
-    color: 'var(--white)',
-    fontFamily: "'DM Sans', sans-serif",
+    borderBottom: `1px solid ${focusedField === name ? '#7C3AED' : 'rgba(0,0,0,0.06)'}`,
+    color: '#18181B',
+    fontFamily: "'Sora', sans-serif",
     fontSize: '0.88rem',
     padding: '0.75rem 0',
     outline: 'none',
     transition: 'border-color 0.3s ease',
-    letterSpacing: '0.02em',
     boxSizing: 'border-box',
+    caretColor: '#7C3AED',
   })
 
   return (
@@ -63,60 +63,74 @@ export default function Contact() {
       ref={ref}
       style={{
         padding: '7rem clamp(1.5rem, 6vw, 5rem)',
-        background: 'var(--bg2)',
+        background: '#F2F0ED',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '-120px',
-          right: '-80px',
-          width: '420px',
-          height: '420px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(201,169,110,0.06) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      <div style={{ maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}>
         <div
+          className="contact-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'clamp(200px, 35%, 380px) 1fr',
-            gap: 'clamp(3rem, 8vw, 8rem)',
+            gridTemplateColumns: '35% 65%',
+            gap: 'clamp(3rem, 8vw, 6rem)',
             alignItems: 'start',
           }}
         >
-          {/* Left */}
+          {/* Left — Info */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.65 }}
           >
-            <p style={styles.label}>// contact me</p>
-            <h2 style={styles.title}>Let&apos;s talk.</h2>
-            <p style={styles.blurb}>
+            <h2
+              style={{
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontSize: 'clamp(2rem, 4vw, 3.2rem)',
+                fontWeight: 400,
+                color: '#18181B',
+                lineHeight: 1.1,
+                marginBottom: '1.5rem',
+              }}
+            >
+              Let&apos;s talk.
+            </h2>
+            <p
+              style={{
+                fontFamily: "'Sora', sans-serif",
+                fontSize: '0.85rem',
+                color: '#A1A1AA',
+                lineHeight: 1.8,
+                marginBottom: '2rem',
+              }}
+            >
               Have a project in mind, a question, or just want to say hi?
               Send me a message and I&apos;ll get back to you.
             </p>
             <a
               href="mailto:sdlansoy@up.edu.ph"
-              style={styles.emailLink}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--gold)')
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(201,169,110,0.3)')
-              }
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '0.72rem',
+                color: '#7C3AED',
+                textDecoration: 'none',
+                borderBottom: '1px solid transparent',
+                paddingBottom: '2px',
+                transition: 'border-color 0.3s',
+              }}
+              onMouseEnter={(e) => {
+                ;(e.currentTarget as HTMLAnchorElement).style.borderColor = '#7C3AED'
+              }}
+              onMouseLeave={(e) => {
+                ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'transparent'
+              }}
             >
               sdlansoy@up.edu.ph
             </a>
           </motion.div>
 
-          {/* Right — form */}
+          {/* Right — Form */}
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -127,23 +141,65 @@ export default function Contact() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                style={{ padding: '3rem 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+                style={{
+                  padding: '3rem 0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.75rem',
+                }}
               >
-                <p style={styles.sentHeading}>Message sent.</p>
-                <p style={styles.sentSub}>
+                <p
+                  style={{
+                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontSize: '1.6rem',
+                    fontWeight: 400,
+                    fontStyle: 'italic',
+                    color: '#7C3AED',
+                  }}
+                >
+                  Message sent.
+                </p>
+                <p
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: '0.72rem',
+                    color: '#A1A1AA',
+                    lineHeight: 1.7,
+                  }}
+                >
                   Thanks for reaching out! I&apos;ll get back to you as soon as I can.
                 </p>
-                <button onClick={() => setStatus('idle')} style={styles.sendAnother}>
+                <button
+                  onClick={() => setStatus('idle')}
+                  style={{
+                    marginTop: '1rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: '0.68rem',
+                    color: '#A1A1AA',
+                    letterSpacing: '0.06em',
+                    textDecoration: 'underline',
+                    padding: 0,
+                    textAlign: 'left',
+                  }}
+                >
                   Send another →
                 </button>
               </motion.div>
             ) : (
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-
+              <form
+                onSubmit={handleSubmit}
+                style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}
+              >
                 {/* Name + Email */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div
+                  className="contact-name-email"
+                  style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}
+                >
                   <div>
-                    <label style={styles.fieldLabel}>Name</label>
+                    <label style={labelStyle}>Name</label>
                     <input
                       type="text"
                       name="name"
@@ -153,11 +209,11 @@ export default function Contact() {
                       onBlur={() => setFocusedField(null)}
                       placeholder="Your name"
                       required
-                      style={{ ...fieldStyle('name'), caretColor: 'var(--gold)' }}
+                      style={fieldStyle('name')}
                     />
                   </div>
                   <div>
-                    <label style={styles.fieldLabel}>Email</label>
+                    <label style={labelStyle}>Email</label>
                     <input
                       type="email"
                       name="email"
@@ -167,14 +223,14 @@ export default function Contact() {
                       onBlur={() => setFocusedField(null)}
                       placeholder="your@email.com"
                       required
-                      style={{ ...fieldStyle('email'), caretColor: 'var(--gold)' }}
+                      style={fieldStyle('email')}
                     />
                   </div>
                 </div>
 
                 {/* Subject */}
                 <div>
-                  <label style={styles.fieldLabel}>Subject</label>
+                  <label style={labelStyle}>Subject</label>
                   <input
                     type="text"
                     name="subject"
@@ -184,13 +240,13 @@ export default function Contact() {
                     onBlur={() => setFocusedField(null)}
                     placeholder="What's this about?"
                     required
-                    style={{ ...fieldStyle('subject'), caretColor: 'var(--gold)' }}
+                    style={fieldStyle('subject')}
                   />
                 </div>
 
                 {/* Message */}
                 <div>
-                  <label style={styles.fieldLabel}>Message</label>
+                  <label style={labelStyle}>Message</label>
                   <textarea
                     name="message"
                     value={form.message}
@@ -204,18 +260,19 @@ export default function Contact() {
                       ...fieldStyle('message'),
                       resize: 'none',
                       display: 'block',
-                      caretColor: 'var(--gold)',
                     }}
                   />
                 </div>
 
                 {status === 'error' && (
-                  <p style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: '0.68rem',
-                    color: '#e07070',
-                    letterSpacing: '0.04em',
-                  }}>
+                  <p
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: '0.68rem',
+                      color: '#e07070',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
                     Something went wrong. Please try again or email me directly.
                   </p>
                 )}
@@ -224,16 +281,28 @@ export default function Contact() {
                   <button
                     type="submit"
                     disabled={status === 'sending'}
-                    style={styles.submitBtn}
+                    style={{
+                      background: 'none',
+                      border: '1px solid rgba(124,58,237,0.2)',
+                      color: '#7C3AED',
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: '0.72rem',
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      padding: '0.75rem 2rem',
+                      cursor: 'pointer',
+                      transition: 'background 0.3s, border-color 0.3s',
+                      borderRadius: '2px',
+                    }}
                     onMouseEnter={(e) => {
                       const btn = e.currentTarget as HTMLButtonElement
-                      btn.style.background = 'rgba(201,169,110,0.1)'
-                      btn.style.borderColor = 'var(--gold)'
+                      btn.style.background = 'rgba(124,58,237,0.06)'
+                      btn.style.borderColor = '#7C3AED'
                     }}
                     onMouseLeave={(e) => {
                       const btn = e.currentTarget as HTMLButtonElement
                       btn.style.background = 'none'
-                      btn.style.borderColor = 'rgba(201,169,110,0.4)'
+                      btn.style.borderColor = 'rgba(124,58,237,0.2)'
                     }}
                   >
                     {status === 'sending' ? 'Sending…' : 'Send message →'}
@@ -248,103 +317,33 @@ export default function Contact() {
       <style>{`
         #contact input::placeholder,
         #contact textarea::placeholder {
-          color: rgba(255,255,255,0.18);
-          font-family: 'DM Mono', monospace;
+          color: rgba(161,161,170,0.4);
+          font-family: 'JetBrains Mono', monospace;
           font-size: 0.78rem;
         }
         #contact input,
         #contact textarea {
-          color-scheme: dark;
+          color-scheme: light;
         }
         @media (max-width: 700px) {
-          #contact .name-email-row { grid-template-columns: 1fr !important; }
+          #contact .contact-grid {
+            grid-template-columns: 1fr !important;
+          }
+          #contact .contact-name-email {
+            grid-template-columns: 1fr !important;
+          }
         }
       `}</style>
     </section>
   )
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  label: {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.68rem',
-    letterSpacing: '0.2em',
-    textTransform: 'uppercase',
-    color: 'var(--gold)',
-    marginBottom: '0.6rem',
-  },
-  title: {
-    fontFamily: "'Cormorant Garamond', Georgia, serif",
-    fontSize: 'clamp(2rem, 4vw, 3.2rem)',
-    fontWeight: 300,
-    color: 'var(--white)',
-    lineHeight: 1.1,
-    marginBottom: '1.5rem',
-  },
-  blurb: {
-    fontSize: '0.78rem',
-    color: 'var(--muted)',
-    fontFamily: "'DM Mono', monospace",
-    lineHeight: 1.8,
-    marginBottom: '2rem',
-  },
-  emailLink: {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.7rem',
-    color: 'var(--gold)',
-    textDecoration: 'none',
-    letterSpacing: '0.04em',
-    borderBottom: '1px solid rgba(201,169,110,0.3)',
-    paddingBottom: '2px',
-    transition: 'border-color 0.3s',
-  },
-  fieldLabel: {
-    display: 'block',
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.6rem',
-    letterSpacing: '0.18em',
-    textTransform: 'uppercase',
-    color: 'var(--gold)',
-    marginBottom: '0.5rem',
-    opacity: 0.7,
-  },
-  submitBtn: {
-    background: 'none',
-    border: '1px solid rgba(201,169,110,0.4)',
-    color: 'var(--gold)',
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.72rem',
-    letterSpacing: '0.12em',
-    textTransform: 'uppercase',
-    padding: '0.75rem 2rem',
-    cursor: 'pointer',
-    transition: 'background 0.3s, border-color 0.3s',
-    borderRadius: '2px',
-  },
-  sentHeading: {
-    fontFamily: "'Cormorant Garamond', Georgia, serif",
-    fontSize: '1.6rem',
-    fontWeight: 300,
-    fontStyle: 'italic',
-    color: 'var(--gold)',
-  },
-  sentSub: {
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.72rem',
-    color: 'var(--muted)',
-    lineHeight: 1.7,
-  },
-  sendAnother: {
-    marginTop: '1rem',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    fontFamily: "'DM Mono', monospace",
-    fontSize: '0.68rem',
-    color: 'var(--muted)',
-    letterSpacing: '0.06em',
-    textDecoration: 'underline',
-    padding: 0,
-    textAlign: 'left',
-  },
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontFamily: "'JetBrains Mono', monospace",
+  fontSize: '0.62rem',
+  letterSpacing: '0.15em',
+  textTransform: 'uppercase',
+  color: '#A1A1AA',
+  marginBottom: '0.4rem',
 }
