@@ -63,7 +63,7 @@ export default function TextScramble({
 
   return (
     <Tag
-      ref={ref as React.RefObject<HTMLElement>}
+      ref={ref as unknown as React.RefObject<HTMLHeadingElement>}
       style={style}
       className={className}
     >
