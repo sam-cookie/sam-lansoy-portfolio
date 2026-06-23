@@ -5,13 +5,14 @@ export default function Footer() {
     <footer
       style={{
         padding: '1.8rem clamp(1.5rem, 6vw, 5rem)',
-        borderTop: '1px solid rgba(0,0,0,0.06)',
+        borderTop: '1px solid var(--border)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
         gap: '0.5rem',
-        background: '#FAFAF7',
+        background: 'var(--bg)',
+        transition: 'background 0.4s ease',
       }}
     >
       <span
@@ -19,7 +20,7 @@ export default function Footer() {
           fontFamily: "'Instrument Serif', Georgia, serif",
           fontStyle: 'italic',
           fontSize: '0.95rem',
-          color: '#18181B',
+          color: 'var(--text)',
         }}
       >
         Sam Lansoy
@@ -29,7 +30,7 @@ export default function Footer() {
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: '0.62rem',
           letterSpacing: '0.1em',
-          color: '#A1A1AA',
+          color: 'var(--text-muted)',
         }}
       >
         &copy; {new Date().getFullYear()} &mdash; built with passion

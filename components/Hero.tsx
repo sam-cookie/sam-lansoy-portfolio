@@ -1,14 +1,26 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import DotGrid from './DotGrid'
 
-const fadeUp = (delay: number) => ({
-  initial: { opacity: 0, y: 24 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.7, ease: [0.25, 0.1, 0.25, 1], delay },
-})
+const NAME = 'Sam\nLansoy'
 
 export default function Hero() {
+  const [charCount, setCharCount] = useState(0)
+  const typingDone = charCount >= NAME.length
+
+  useEffect(() => {
+    if (charCount >= NAME.length) return
+    const delay =
+      charCount === 0 ? 600 : NAME[charCount - 1] === '\n' ? 220 : 85
+    const timeout = setTimeout(() => setCharCount((c) => c + 1), delay)
+    return () => clearTimeout(timeout)
+  }, [charCount])
+
+  const typed = NAME.slice(0, charCount)
+  const parts = typed.split('\n')
+
   return (
     <section
       id="home"
@@ -20,17 +32,16 @@ export default function Hero() {
         padding: '0 clamp(1.5rem, 6vw, 5rem)',
         paddingTop: '80px',
         position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      <div
-        style={{
-          maxWidth: '900px',
-          width: '100%',
-        }}
-      >
+      <DotGrid />
+      <div style={{ maxWidth: '900px', width: '100%', position: 'relative', zIndex: 1 }}>
         {/* Greeting */}
         <motion.p
-          {...fadeUp(0.2)}
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] as const, delay: 0.2 }}
           style={{
             fontFamily: "'Sora', sans-serif",
             fontSize: '0.95rem',
@@ -42,9 +53,8 @@ export default function Hero() {
           Hello, I&apos;m
         </motion.p>
 
-        {/* Name */}
-        <motion.h1
-          {...fadeUp(0.35)}
+        {/* Name — typed character by character */}
+        <h1
           style={{
             fontFamily: "'Instrument Serif', Georgia, serif",
             fontSize: 'clamp(4rem, 12vw, 8rem)',
@@ -54,28 +64,39 @@ export default function Hero() {
             letterSpacing: '-0.02em',
             color: 'var(--text)',
             margin: 0,
+            minHeight: 'calc(clamp(4rem, 12vw, 8rem) * 2.1)',
           }}
         >
-          Sam
-          <br />
-          Lansoy
-          <span
-            style={{
-              display: 'inline-block',
-              width: '4px',
-              height: '0.7em',
-              background: 'var(--accent)',
-              borderRadius: '2px',
-              marginLeft: '0.08em',
-              verticalAlign: 'baseline',
-              animation: 'cursorPulse 1.1s step-end infinite',
-            }}
-          />
-        </motion.h1>
+          {parts[0]}
+          {parts.length > 1 && (
+            <>
+              <br />
+              {parts[1]}
+            </>
+          )}
+          {charCount > 0 && (
+            <span
+              style={{
+                display: 'inline-block',
+                width: '4px',
+                height: '0.7em',
+                background: 'var(--accent)',
+                borderRadius: '2px',
+                marginLeft: '0.08em',
+                verticalAlign: 'baseline',
+                animation: typingDone
+                  ? 'cursorPulse 1.1s step-end infinite'
+                  : 'none',
+              }}
+            />
+          )}
+        </h1>
 
-        {/* Roles */}
+        {/* Roles — waits for typing to finish */}
         <motion.p
-          {...fadeUp(0.5)}
+          initial={{ opacity: 0, y: 24 }}
+          animate={typingDone ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] as const, delay: 0.1 }}
           style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: '0.78rem',
@@ -89,7 +110,9 @@ export default function Hero() {
 
         {/* Bio */}
         <motion.p
-          {...fadeUp(0.6)}
+          initial={{ opacity: 0, y: 24 }}
+          animate={typingDone ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] as const, delay: 0.2 }}
           style={{
             fontFamily: "'Sora', sans-serif",
             fontSize: '0.95rem',
@@ -106,7 +129,9 @@ export default function Hero() {
 
         {/* Links */}
         <motion.div
-          {...fadeUp(0.75)}
+          initial={{ opacity: 0, y: 24 }}
+          animate={typingDone ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] as const, delay: 0.35 }}
           style={{
             display: 'flex',
             flexWrap: 'wrap',
@@ -130,7 +155,7 @@ export default function Hero() {
   )
 }
 
-/* ── Sub-components ─────────────────────────────── */
+/* -- Sub-components ------------------------------------ */
 
 function HeroLink({
   href,

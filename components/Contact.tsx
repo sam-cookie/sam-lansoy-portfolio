@@ -3,6 +3,8 @@
 import { useRef, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
 import emailjs from '@emailjs/browser'
+import TextScramble from './TextScramble'
+import Magnetic from './Magnetic'
 
 export default function Contact() {
   const ref = useRef<HTMLElement>(null)
@@ -46,15 +48,15 @@ export default function Contact() {
     width: '100%',
     background: 'transparent',
     border: 'none',
-    borderBottom: `1px solid ${focusedField === name ? '#7C3AED' : 'rgba(0,0,0,0.06)'}`,
-    color: '#18181B',
+    borderBottom: `1px solid ${focusedField === name ? 'var(--accent)' : 'var(--border)'}`,
+    color: 'var(--text)',
     fontFamily: "'Sora', sans-serif",
     fontSize: '0.88rem',
     padding: '0.75rem 0',
     outline: 'none',
     transition: 'border-color 0.3s ease',
     boxSizing: 'border-box',
-    caretColor: '#7C3AED',
+    caretColor: 'var(--accent)',
   })
 
   return (
@@ -63,9 +65,10 @@ export default function Contact() {
       ref={ref}
       style={{
         padding: '7rem clamp(1.5rem, 6vw, 5rem)',
-        background: '#F2F0ED',
+        background: 'var(--bg-alt)',
         position: 'relative',
         overflow: 'hidden',
+        transition: 'background 0.4s ease',
       }}
     >
       <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%' }}>
@@ -84,23 +87,23 @@ export default function Contact() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.65 }}
           >
-            <h2
+            <TextScramble
+              text="Let's talk."
+              as="h2"
               style={{
                 fontFamily: "'Instrument Serif', Georgia, serif",
                 fontSize: 'clamp(2rem, 4vw, 3.2rem)',
                 fontWeight: 400,
-                color: '#18181B',
+                color: 'var(--text)',
                 lineHeight: 1.1,
                 marginBottom: '1.5rem',
               }}
-            >
-              Let&apos;s talk.
-            </h2>
+            />
             <p
               style={{
                 fontFamily: "'Sora', sans-serif",
                 fontSize: '0.85rem',
-                color: '#A1A1AA',
+                color: 'var(--text-muted)',
                 lineHeight: 1.8,
                 marginBottom: '2rem',
               }}
@@ -113,14 +116,14 @@ export default function Contact() {
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: '0.72rem',
-                color: '#7C3AED',
+                color: 'var(--accent)',
                 textDecoration: 'none',
                 borderBottom: '1px solid transparent',
                 paddingBottom: '2px',
                 transition: 'border-color 0.3s',
               }}
               onMouseEnter={(e) => {
-                ;(e.currentTarget as HTMLAnchorElement).style.borderColor = '#7C3AED'
+                ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--accent)'
               }}
               onMouseLeave={(e) => {
                 ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'transparent'
@@ -154,7 +157,7 @@ export default function Contact() {
                     fontSize: '1.6rem',
                     fontWeight: 400,
                     fontStyle: 'italic',
-                    color: '#7C3AED',
+                    color: 'var(--accent)',
                   }}
                 >
                   Message sent.
@@ -163,7 +166,7 @@ export default function Contact() {
                   style={{
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: '0.72rem',
-                    color: '#A1A1AA',
+                    color: 'var(--text-muted)',
                     lineHeight: 1.7,
                   }}
                 >
@@ -178,7 +181,7 @@ export default function Contact() {
                     cursor: 'pointer',
                     fontFamily: "'JetBrains Mono', monospace",
                     fontSize: '0.68rem',
-                    color: '#A1A1AA',
+                    color: 'var(--text-muted)',
                     letterSpacing: '0.06em',
                     textDecoration: 'underline',
                     padding: 0,
@@ -278,35 +281,39 @@ export default function Contact() {
                 )}
 
                 <div>
-                  <button
-                    type="submit"
-                    disabled={status === 'sending'}
-                    style={{
-                      background: 'none',
-                      border: '1px solid rgba(124,58,237,0.2)',
-                      color: '#7C3AED',
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: '0.72rem',
-                      letterSpacing: '0.1em',
-                      textTransform: 'uppercase',
-                      padding: '0.75rem 2rem',
-                      cursor: 'pointer',
-                      transition: 'background 0.3s, border-color 0.3s',
-                      borderRadius: '2px',
-                    }}
-                    onMouseEnter={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement
-                      btn.style.background = 'rgba(124,58,237,0.06)'
-                      btn.style.borderColor = '#7C3AED'
-                    }}
-                    onMouseLeave={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement
-                      btn.style.background = 'none'
-                      btn.style.borderColor = 'rgba(124,58,237,0.2)'
-                    }}
-                  >
-                    {status === 'sending' ? 'Sending…' : 'Send message →'}
-                  </button>
+                  <Magnetic strength={0.2}>
+                    <button
+                      type="submit"
+                      disabled={status === 'sending'}
+                      style={{
+                        background: 'none',
+                        border: '1px solid var(--accent-border)',
+                        color: 'var(--accent)',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '0.72rem',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        padding: '0.75rem 2rem',
+                        cursor: 'pointer',
+                        transition: 'background 0.3s, border-color 0.3s, box-shadow 0.3s',
+                        borderRadius: '2px',
+                      }}
+                      onMouseEnter={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement
+                        btn.style.background = 'var(--accent-soft)'
+                        btn.style.borderColor = 'var(--accent)'
+                        btn.style.boxShadow = '0 0 25px var(--accent-soft)'
+                      }}
+                      onMouseLeave={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement
+                        btn.style.background = 'none'
+                        btn.style.borderColor = 'var(--accent-border)'
+                        btn.style.boxShadow = 'none'
+                      }}
+                    >
+                      {status === 'sending' ? 'Sending…' : 'Send message →'}
+                    </button>
+                  </Magnetic>
                 </div>
               </form>
             )}
@@ -317,13 +324,14 @@ export default function Contact() {
       <style>{`
         #contact input::placeholder,
         #contact textarea::placeholder {
-          color: rgba(161,161,170,0.4);
+          color: var(--text-muted);
+          opacity: 0.5;
           font-family: 'JetBrains Mono', monospace;
           font-size: 0.78rem;
         }
         #contact input,
         #contact textarea {
-          color-scheme: light;
+          color-scheme: var(--input-color-scheme);
         }
         @media (max-width: 700px) {
           #contact .contact-grid {
@@ -344,6 +352,6 @@ const labelStyle: React.CSSProperties = {
   fontSize: '0.62rem',
   letterSpacing: '0.15em',
   textTransform: 'uppercase',
-  color: '#A1A1AA',
+  color: 'var(--text-muted)',
   marginBottom: '0.4rem',
 }

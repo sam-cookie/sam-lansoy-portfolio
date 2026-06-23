@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import TextScramble from './TextScramble'
 
-/* ── Types ─────────────────────────────────────────── */
+/* -- Types ------------------------------------------------ */
 type Project = {
   id: string
   title: string
@@ -19,7 +20,7 @@ type Project = {
   year: string
 }
 
-/* ── Data ──────────────────────────────────────────── */
+/* -- Data ------------------------------------------------- */
 const PROJECTS: Project[] = [
   {
     id: 'platemate',
@@ -192,27 +193,14 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]['key']
 
-/* ── Design Tokens ─────────────────────────────────── */
-const C = {
-  bg: '#FAFAF7',
-  bgAlt: '#F2F0ED',
-  text: '#18181B',
-  textMid: '#52525B',
-  textMuted: '#A1A1AA',
-  accent: '#7C3AED',
-  accentHover: '#6D28D9',
-  accentSoft: 'rgba(124,58,237,0.06)',
-  accentBorder: 'rgba(124,58,237,0.2)',
-  border: 'rgba(0,0,0,0.06)',
-}
-
+/* -- Fonts ------------------------------------------------ */
 const F = {
   serif: "'Instrument Serif', Georgia, serif",
   body: "'Sora', sans-serif",
   mono: "'JetBrains Mono', monospace",
 }
 
-/* ── Main Component ────────────────────────────────── */
+/* -- Main Component --------------------------------------- */
 export default function Projects() {
   const ref = useRef<HTMLElement>(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
@@ -253,25 +241,32 @@ export default function Projects() {
       <section
         id="projects"
         ref={ref}
-        style={{ padding: '7rem clamp(1.5rem, 6vw, 5rem)', background: C.bg }}
+        style={{
+          padding: '7rem clamp(1.5rem, 6vw, 5rem)',
+          background: 'var(--bg)',
+          transition: 'background 0.4s ease',
+        }}
       >
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           {/* Title */}
-          <motion.h2
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            style={{
-              fontFamily: F.serif,
-              fontSize: 'clamp(2rem, 5vw, 3.2rem)',
-              fontWeight: 400,
-              color: C.text,
-              lineHeight: 1.1,
-              margin: 0,
-            }}
           >
-            Projects
-          </motion.h2>
+            <TextScramble
+              text="Projects"
+              as="h2"
+              style={{
+                fontFamily: F.serif,
+                fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+                fontWeight: 400,
+                color: 'var(--text)',
+                lineHeight: 1.1,
+                margin: 0,
+              }}
+            />
+          </motion.div>
 
           {/* Tabs */}
           <motion.div
@@ -289,14 +284,14 @@ export default function Projects() {
                   border: 'none',
                   borderBottom:
                     activeTab === tab.key
-                      ? `2px solid ${C.accent}`
+                      ? '2px solid var(--accent)'
                       : '2px solid transparent',
                   cursor: 'pointer',
                   fontFamily: F.body,
                   fontSize: '0.82rem',
                   fontWeight: 400,
                   letterSpacing: '0.04em',
-                  color: activeTab === tab.key ? C.accent : C.textMuted,
+                  color: activeTab === tab.key ? 'var(--accent)' : 'var(--text-muted)',
                   padding: '0.5rem 0',
                   marginRight: '2rem',
                   transition: 'color 0.25s, border-color 0.25s',
@@ -308,7 +303,7 @@ export default function Projects() {
           </motion.div>
 
           {/* Divider */}
-          <div style={{ width: '100%', height: 1, background: C.border }} />
+          <div style={{ width: '100%', height: 1, background: 'var(--border)' }} />
 
           {/* Desktop: Split layout */}
           <div
@@ -390,7 +385,7 @@ export default function Projects() {
   )
 }
 
-/* ── Project Row (Desktop Left Column) ─────────────── */
+/* -- Project Row (Desktop Left Column) -------------------- */
 function ProjectRow({
   project,
   index,
@@ -417,8 +412,8 @@ function ProjectRow({
       style={{
         position: 'relative',
         padding: '1.6rem 0 1.6rem 1.2rem',
-        borderBottom: `1px solid ${C.border}`,
-        background: active ? C.accentSoft : 'transparent',
+        borderBottom: '1px solid var(--border)',
+        background: active ? 'var(--accent-soft)' : 'transparent',
         cursor: 'pointer',
         transition: 'background 0.25s ease',
       }}
@@ -433,7 +428,7 @@ function ProjectRow({
           fontFamily: F.serif,
           fontSize: '5.5rem',
           fontWeight: 400,
-          color: C.text,
+          color: 'var(--text)',
           opacity: 0.03,
           lineHeight: 1,
           pointerEvents: 'none',
@@ -443,7 +438,7 @@ function ProjectRow({
         {number}
       </span>
 
-      {/* Left violet accent line */}
+      {/* Left accent line */}
       <div
         style={{
           position: 'absolute',
@@ -451,7 +446,7 @@ function ProjectRow({
           top: '0.8rem',
           bottom: '0.8rem',
           width: 3,
-          background: C.accent,
+          background: 'var(--accent)',
           borderRadius: 2,
           opacity: active ? 1 : 0,
           transform: active ? 'scaleY(1)' : 'scaleY(0.3)',
@@ -473,7 +468,7 @@ function ProjectRow({
               fontFamily: F.serif,
               fontSize: '1.25rem',
               fontWeight: 400,
-              color: active ? C.text : C.text,
+              color: 'var(--text)',
             }}
           >
             {project.title}
@@ -482,7 +477,7 @@ function ProjectRow({
             style={{
               fontFamily: F.mono,
               fontSize: '0.6rem',
-              color: C.textMuted,
+              color: 'var(--text-muted)',
               letterSpacing: '0.06em',
             }}
           >
@@ -495,7 +490,7 @@ function ProjectRow({
           style={{
             fontFamily: F.body,
             fontSize: '0.78rem',
-            color: C.textMuted,
+            color: 'var(--text-muted)',
             lineHeight: 1.6,
             marginTop: '0.3rem',
             marginBottom: '0.5rem',
@@ -509,7 +504,7 @@ function ProjectRow({
           style={{
             fontFamily: F.mono,
             fontSize: '0.62rem',
-            color: active ? C.accent : C.textMuted,
+            color: active ? 'var(--accent)' : 'var(--text-muted)',
             letterSpacing: '0.02em',
             transition: 'color 0.25s ease',
           }}
@@ -521,13 +516,13 @@ function ProjectRow({
   )
 }
 
-/* ── Preview Panel (Desktop Right Column) ──────────── */
+/* -- Preview Panel (Desktop Right Column) ----------------- */
 function PreviewPanel({ project }: { project: Project }) {
   return (
     <div
       style={{
-        borderTop: `3px solid ${C.accent}`,
-        background: C.bg,
+        borderTop: '3px solid var(--accent)',
+        background: 'var(--bg)',
         borderRadius: '0 0 8px 8px',
         maxHeight: 'calc(100vh - 128px)',
         overflowY: 'auto',
@@ -549,10 +544,8 @@ function PreviewPanel({ project }: { project: Project }) {
   )
 }
 
-/* ── Project Detail (shared content) ───────────────── */
+/* -- Project Detail (shared content) ---------------------- */
 function ProjectDetail({ project, compact }: { project: Project; compact?: boolean }) {
-  const isPhone = project.type === 'mobile' || project.type === 'game'
-
   return (
     <>
       {/* Device Frame + Image */}
@@ -579,7 +572,7 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
             fontFamily: F.serif,
             fontSize: compact ? '1.1rem' : '1.35rem',
             fontWeight: 400,
-            color: C.text,
+            color: 'var(--text)',
             margin: 0,
           }}
         >
@@ -589,9 +582,9 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
           style={{
             fontFamily: F.mono,
             fontSize: '0.58rem',
-            color: C.accent,
-            background: C.accentSoft,
-            border: `1px solid ${C.accentBorder}`,
+            color: 'var(--accent)',
+            background: 'var(--accent-soft)',
+            border: '1px solid var(--accent-border)',
             padding: '0.15rem 0.5rem',
             borderRadius: '2px',
             letterSpacing: '0.06em',
@@ -604,7 +597,7 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
           style={{
             fontFamily: F.mono,
             fontSize: '0.6rem',
-            color: C.textMuted,
+            color: 'var(--text-muted)',
             letterSpacing: '0.04em',
           }}
         >
@@ -617,7 +610,7 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
         style={{
           fontFamily: F.body,
           fontSize: compact ? '0.8rem' : '0.85rem',
-          color: C.textMid,
+          color: 'var(--text-mid)',
           lineHeight: 1.75,
           marginTop: '0.8rem',
         }}
@@ -645,7 +638,7 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
             style={{
               fontFamily: F.body,
               fontSize: compact ? '0.75rem' : '0.8rem',
-              color: C.textMid,
+              color: 'var(--text-mid)',
               display: 'flex',
               alignItems: 'flex-start',
               gap: '0.5rem',
@@ -654,7 +647,7 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
           >
             <span
               style={{
-                color: C.accent,
+                color: 'var(--accent)',
                 fontSize: '0.5rem',
                 lineHeight: '1.5',
                 marginTop: '0.15em',
@@ -674,7 +667,7 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
           style={{
             fontFamily: F.mono,
             fontSize: '0.62rem',
-            color: C.textMuted,
+            color: 'var(--text-muted)',
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
           }}
@@ -685,7 +678,7 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
           style={{
             fontFamily: F.mono,
             fontSize: '0.62rem',
-            color: C.textMid,
+            color: 'var(--text-mid)',
             letterSpacing: '0.04em',
           }}
         >
@@ -711,9 +704,9 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
             style={{
               fontFamily: F.mono,
               fontSize: '0.6rem',
-              color: C.accent,
-              background: C.accentSoft,
-              border: `1px solid ${C.accentBorder}`,
+              color: 'var(--accent)',
+              background: 'var(--accent-soft)',
+              border: '1px solid var(--accent-border)',
               padding: '0.2rem 0.55rem',
               borderRadius: '2px',
               letterSpacing: '0.03em',
@@ -738,9 +731,9 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
             fontFamily: F.mono,
             fontSize: '0.7rem',
             letterSpacing: '0.06em',
-            color: C.accent,
+            color: 'var(--accent)',
             textDecoration: 'none',
-            border: `1px solid ${C.accentBorder}`,
+            border: '1px solid var(--accent-border)',
             padding: '0.5rem 1rem',
             borderRadius: '2px',
             background: 'transparent',
@@ -748,13 +741,13 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
           }}
           onMouseEnter={(e) => {
             const el = e.currentTarget
-            el.style.background = C.accentSoft
-            el.style.borderColor = C.accent
+            el.style.background = 'var(--accent-soft)'
+            el.style.borderColor = 'var(--accent)'
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget
             el.style.background = 'transparent'
-            el.style.borderColor = C.accentBorder
+            el.style.borderColor = 'var(--accent-border)'
           }}
         >
           View on GitHub →
@@ -764,7 +757,7 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
   )
 }
 
-/* ── Device Frame ──────────────────────────────────── */
+/* -- Device Frame ----------------------------------------- */
 function DeviceFrame({
   type,
   image,
@@ -774,38 +767,71 @@ function DeviceFrame({
   image: string
   title: string
 }) {
+  const frameRef = useRef<HTMLDivElement>(null)
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 })
+  const [isHovered, setIsHovered] = useState(false)
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!frameRef.current) return
+    const rect = frameRef.current.getBoundingClientRect()
+    const cx = rect.left + rect.width / 2
+    const cy = rect.top + rect.height / 2
+    const maxAngle = 5
+    const rx = -((e.clientY - cy) / (rect.height / 2)) * maxAngle
+    const ry = ((e.clientX - cx) / (rect.width / 2)) * maxAngle
+    setTilt({ rx, ry })
+  }
+
+  const handleMouseLeave = () => {
+    setTilt({ rx: 0, ry: 0 })
+    setIsHovered(false)
+  }
+
+  const tiltStyle: React.CSSProperties = {
+    transform: `perspective(800px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
+    transition: isHovered ? 'transform 0.1s ease-out, box-shadow 0.25s ease' : 'transform 0.4s ease-out, box-shadow 0.4s ease',
+    boxShadow: isHovered
+      ? `${-tilt.ry * 2}px ${-tilt.rx * 2}px 30px rgba(0, 0, 0, 0.12)`
+      : '0 0 0 rgba(0, 0, 0, 0)',
+  }
+
   if (type === 'web') {
     return (
       <div
+        ref={frameRef}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={handleMouseLeave}
         style={{
           borderRadius: 8,
           overflow: 'hidden',
-          border: `1px solid ${C.border}`,
-          background: '#fff',
+          border: '1px solid var(--border)',
+          background: 'var(--card-bg)',
+          ...tiltStyle,
         }}
       >
         {/* Browser bar */}
         <div
           style={{
             height: 32,
-            background: '#F5F5F3',
+            background: 'var(--card-bar)',
             display: 'flex',
             alignItems: 'center',
             padding: '0 12px',
             gap: 6,
-            borderBottom: `1px solid ${C.border}`,
+            borderBottom: '1px solid var(--border)',
           }}
         >
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF5F57' }} />
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FFBD2E' }} />
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#28CA42' }} />
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--dots-red)' }} />
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--dots-yellow)' }} />
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--dots-green)' }} />
           <div
             style={{
               flex: 1,
               marginLeft: 10,
               height: 16,
               borderRadius: 4,
-              background: 'rgba(0,0,0,0.04)',
+              background: 'var(--card-url-bg)',
               display: 'flex',
               alignItems: 'center',
               paddingLeft: 8,
@@ -815,7 +841,7 @@ function DeviceFrame({
               style={{
                 fontFamily: F.mono,
                 fontSize: '0.55rem',
-                color: C.textMuted,
+                color: 'var(--text-muted)',
               }}
             >
               {title.toLowerCase().replace(/\s+/g, '')}.app
@@ -840,14 +866,19 @@ function DeviceFrame({
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <div
+        ref={frameRef}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={handleMouseLeave}
         style={{
           width: '55%',
           maxWidth: 200,
           borderRadius: 20,
           overflow: 'hidden',
-          border: '2px solid rgba(0,0,0,0.08)',
-          background: '#1a1a1a',
+          border: '2px solid var(--phone-frame-border)',
+          background: 'var(--phone-frame-bg)',
           padding: 6,
+          ...tiltStyle,
         }}
       >
         {/* Notch */}
@@ -856,7 +887,7 @@ function DeviceFrame({
             width: 50,
             height: 4,
             borderRadius: 2,
-            background: 'rgba(255,255,255,0.12)',
+            background: 'var(--phone-detail)',
             margin: '4px auto 6px',
           }}
         />
@@ -884,7 +915,7 @@ function DeviceFrame({
             width: 36,
             height: 3,
             borderRadius: 2,
-            background: 'rgba(255,255,255,0.15)',
+            background: 'var(--phone-detail)',
             margin: '6px auto 2px',
           }}
         />
@@ -893,7 +924,7 @@ function DeviceFrame({
   )
 }
 
-/* ── Mobile Accordion Row ──────────────────────────── */
+/* -- Mobile Accordion Row --------------------------------- */
 function MobileAccordionRow({
   project,
   index,
@@ -912,7 +943,7 @@ function MobileAccordionRow({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: index * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
-      style={{ borderBottom: `1px solid ${C.border}` }}
+      style={{ borderBottom: '1px solid var(--border)' }}
     >
       {/* Row header (tap to expand) */}
       <div
@@ -921,7 +952,7 @@ function MobileAccordionRow({
           position: 'relative',
           padding: '1.4rem 0 1.4rem 1rem',
           cursor: 'pointer',
-          background: isExpanded ? C.accentSoft : 'transparent',
+          background: isExpanded ? 'var(--accent-soft)' : 'transparent',
           transition: 'background 0.25s ease',
         }}
       >
@@ -933,7 +964,7 @@ function MobileAccordionRow({
             top: '0.6rem',
             bottom: '0.6rem',
             width: 3,
-            background: C.accent,
+            background: 'var(--accent)',
             borderRadius: 2,
             opacity: isExpanded ? 1 : 0,
             transform: isExpanded ? 'scaleY(1)' : 'scaleY(0.3)',
@@ -942,13 +973,13 @@ function MobileAccordionRow({
         />
 
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-          <span style={{ fontFamily: F.mono, fontSize: '0.65rem', color: C.textMuted }}>
+          <span style={{ fontFamily: F.mono, fontSize: '0.65rem', color: 'var(--text-muted)' }}>
             {number}
           </span>
-          <span style={{ fontFamily: F.serif, fontSize: '1.15rem', fontWeight: 400, color: C.text }}>
+          <span style={{ fontFamily: F.serif, fontSize: '1.15rem', fontWeight: 400, color: 'var(--text)' }}>
             {project.title}
           </span>
-          <span style={{ fontFamily: F.mono, fontSize: '0.58rem', color: C.textMuted }}>
+          <span style={{ fontFamily: F.mono, fontSize: '0.58rem', color: 'var(--text-muted)' }}>
             {project.year}
           </span>
           <span
@@ -956,7 +987,7 @@ function MobileAccordionRow({
               marginLeft: 'auto',
               fontFamily: F.body,
               fontSize: '0.85rem',
-              color: C.accent,
+              color: 'var(--accent)',
               transform: isExpanded ? 'rotate(45deg)' : 'rotate(0deg)',
               transition: 'transform 0.25s ease',
             }}
@@ -969,7 +1000,7 @@ function MobileAccordionRow({
           style={{
             fontFamily: F.body,
             fontSize: '0.75rem',
-            color: C.textMuted,
+            color: 'var(--text-muted)',
             lineHeight: 1.5,
             marginTop: '0.25rem',
           }}

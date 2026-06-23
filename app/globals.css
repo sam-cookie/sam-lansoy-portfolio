@@ -11,6 +11,59 @@
   --accent-soft: rgba(124, 58, 237, 0.06);
   --accent-border: rgba(124, 58, 237, 0.2);
   --border: rgba(0, 0, 0, 0.06);
+  --nav-bg: rgba(250, 250, 247, 0.9);
+  --nav-bg-solid: rgba(250, 250, 247, 0.97);
+  --card-bg: #ffffff;
+  --card-bar: #F5F5F3;
+  --card-url-bg: rgba(0, 0, 0, 0.04);
+  --phone-frame-bg: #1a1a1a;
+  --phone-frame-border: rgba(0, 0, 0, 0.08);
+  --phone-detail: rgba(255, 255, 255, 0.12);
+  --selection-bg: rgba(124, 58, 237, 0.15);
+  --selection-color: #6D28D9;
+  --input-color-scheme: light;
+  --hamburger: #52525B;
+  --dots-red: #FF5F57;
+  --dots-yellow: #FFBD2E;
+  --dots-green: #28CA42;
+  --paper-bg: #FAFAF7;
+  --paper-line: rgba(0, 0, 0, 0.035);
+  --paper-noise-opacity: 0.03;
+  --typewriter-text: #2B2B2B;
+  --typewriter-prefix: #B8B0A8;
+}
+
+[data-theme="dark"] {
+  --bg: #0D1B14;
+  --bg-alt: #142318;
+  --text: #E4E0D7;
+  --text-mid: #A3AA9E;
+  --text-muted: #5E6E5C;
+  --accent: #5FA676;
+  --accent-hover: #72BB8A;
+  --accent-soft: rgba(95, 166, 118, 0.1);
+  --accent-border: rgba(95, 166, 118, 0.22);
+  --border: rgba(255, 255, 255, 0.06);
+  --nav-bg: rgba(13, 27, 20, 0.92);
+  --nav-bg-solid: rgba(20, 35, 24, 0.97);
+  --card-bg: #182620;
+  --card-bar: #1A2B22;
+  --card-url-bg: rgba(255, 255, 255, 0.05);
+  --phone-frame-bg: #0A120E;
+  --phone-frame-border: rgba(95, 166, 118, 0.15);
+  --phone-detail: rgba(255, 255, 255, 0.08);
+  --selection-bg: rgba(95, 166, 118, 0.2);
+  --selection-color: #72BB8A;
+  --input-color-scheme: dark;
+  --hamburger: #A3AA9E;
+  --dots-red: #8B4444;
+  --dots-yellow: #8B7A3A;
+  --dots-green: #3A7A4A;
+  --paper-bg: #111D16;
+  --paper-line: rgba(255, 255, 255, 0.025);
+  --paper-noise-opacity: 0.015;
+  --typewriter-text: #D5D0C7;
+  --typewriter-prefix: #4A5548;
 }
 
 *, *::before, *::after {
@@ -29,6 +82,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 ::-webkit-scrollbar { width: 4px; }
@@ -36,12 +90,17 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
 
 ::selection {
-  background: rgba(124, 58, 237, 0.15);
-  color: var(--accent-hover);
+  background: var(--selection-bg);
+  color: var(--selection-color);
 }
 
 @keyframes cursorPulse {
   0%, 45% { opacity: 1; }
   50%, 95% { opacity: 0; }
   100% { opacity: 1; }
+}
+
+@keyframes typewriterBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
 }

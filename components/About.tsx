@@ -1,42 +1,17 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
+import Skills from './Skills'
+import TextScramble from './TextScramble'
+import Magnetic from './Magnetic'
 
 /* -- Data ------------------------------------------------ */
 const STATS = [
-  { num: '2+', label: 'years of experience' },
-  { num: '10+', label: 'projects completed' },
-  { num: '89k+', label: 'hours of music' },
+  { value: 2, suffix: '+', label: 'years of experience' },
+  { value: 10, suffix: '+', label: 'projects completed' },
+  { value: 89, suffix: 'k+', label: 'hours of music' },
 ]
-
-const TECH = [
-  {
-    category: 'languages',
-    items: ['Python', 'C', 'Java', 'JavaScript', 'TypeScript', 'Assembly', 'SQL', 'Dart', 'PHP'],
-  },
-  {
-    category: 'frameworks & libraries',
-    items: ['Flutter', 'React', 'Node.js', 'Express', 'Flask', 'RayLib', 'Laravel / Blade'],
-  },
-  {
-    category: 'tools & platforms',
-    items: ['Git', 'GitHub', 'Firebase', 'Supabase', 'VSCode', 'Figma', 'Canva', 'Balsamiq'],
-  },
-]
-
-/* -- Colors ---------------------------------------------- */
-const C = {
-  bgAlt: '#F2F0ED',
-  text: '#18181B',
-  textMid: '#52525B',
-  textMuted: '#A1A1AA',
-  accent: '#7C3AED',
-  accentHover: '#6D28D9',
-  accentSoft: 'rgba(124,58,237,0.06)',
-  accentBorder: 'rgba(124,58,237,0.2)',
-  border: 'rgba(0,0,0,0.06)',
-}
 
 /* -- Fonts ----------------------------------------------- */
 const F = {
@@ -44,13 +19,6 @@ const F = {
   body: "'Sora', sans-serif",
   mono: "'JetBrains Mono', monospace",
 }
-
-/* -- Animation helpers ----------------------------------- */
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 24 } as const,
-  animate: { opacity: 1, y: 0 } as const,
-  transition: { duration: 0.65, ease: [0.25, 0.1, 0.25, 1], delay },
-})
 
 /* -- Component ------------------------------------------- */
 export default function About() {
@@ -72,27 +40,31 @@ export default function About() {
         ref={ref}
         style={{
           padding: '7rem clamp(1.5rem, 6vw, 5rem)',
-          background: C.bgAlt,
+          background: 'var(--bg-alt)',
+          transition: 'background 0.4s ease',
         }}
       >
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
           {/* Section title */}
-          <motion.h2
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
-            style={{
-              fontFamily: F.serif,
-              fontSize: 'clamp(2rem, 5vw, 3.2rem)',
-              fontWeight: 400,
-              color: C.text,
-              lineHeight: 1.1,
-              margin: 0,
-            }}
           >
-            About Me
-          </motion.h2>
+            <TextScramble
+              text="About Me"
+              as="h2"
+              style={{
+                fontFamily: F.serif,
+                fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+                fontWeight: 400,
+                color: 'var(--text)',
+                lineHeight: 1.1,
+                margin: 0,
+              }}
+            />
+          </motion.div>
 
           {/* Two-column layout: bio + stats */}
           <div
@@ -125,24 +97,28 @@ export default function About() {
               </p>
 
               {/* GitHub link */}
-              <a
-                href="https://github.com/sam-cookie"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={styles.ghLink}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget
-                  el.style.background = C.accentSoft
-                  el.style.borderColor = C.accent
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget
-                  el.style.background = 'transparent'
-                  el.style.borderColor = C.accentBorder
-                }}
-              >
-                View my GitHub &rarr;
-              </a>
+              <Magnetic strength={0.2}>
+                <a
+                  href="https://github.com/sam-cookie"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={styles.ghLink}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget
+                    el.style.background = 'var(--accent-soft)'
+                    el.style.borderColor = 'var(--accent)'
+                    el.style.boxShadow = '0 0 25px var(--accent-soft)'
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget
+                    el.style.background = 'transparent'
+                    el.style.borderColor = 'var(--accent-border)'
+                    el.style.boxShadow = 'none'
+                  }}
+                >
+                  View my GitHub &rarr;
+                </a>
+              </Magnetic>
             </motion.div>
 
             {/* RIGHT - Stats */}
@@ -154,7 +130,7 @@ export default function About() {
                   animate={inView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.65, delay: 0.15 + i * 0.08 }}
                   style={{
-                    borderLeft: `2px solid ${C.accent}`,
+                    borderLeft: '2px solid var(--accent)',
                     paddingLeft: '1.2rem',
                   }}
                 >
@@ -163,11 +139,11 @@ export default function About() {
                       fontFamily: F.serif,
                       fontSize: 'clamp(1.8rem, 3vw, 2.2rem)',
                       fontWeight: 400,
-                      color: C.accent,
+                      color: 'var(--accent)',
                       lineHeight: 1,
                     }}
                   >
-                    {s.num}
+                    <CountUp target={s.value} suffix={s.suffix} active={inView} delay={0.15 + i * 0.08} />
                   </div>
                   <div
                     style={{
@@ -175,7 +151,7 @@ export default function About() {
                       fontSize: '0.7rem',
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',
-                      color: C.textMuted,
+                      color: 'var(--text-muted)',
                       marginTop: '0.25rem',
                     }}
                   >
@@ -191,50 +167,13 @@ export default function About() {
             style={{
               width: '100%',
               height: 1,
-              background: `linear-gradient(90deg, transparent, ${C.border} 20%, ${C.border} 80%, transparent)`,
+              background: 'linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent)',
               margin: '3rem 0',
             }}
           />
 
-          {/* Tech stack */}
-          <div>
-            {TECH.map((group, gi) => (
-              <motion.div
-                key={group.category}
-                initial={{ opacity: 0, y: 24 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.65, delay: 0.35 + gi * 0.1 }}
-                style={{
-                  marginBottom: gi < TECH.length - 1 ? '1.5rem' : 0,
-                }}
-              >
-                <p
-                  style={{
-                    fontFamily: F.mono,
-                    fontSize: '0.68rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.15em',
-                    color: C.textMuted,
-                    marginBottom: '0.6rem',
-                    marginTop: 0,
-                  }}
-                >
-                  {group.category}
-                </p>
-                <p
-                  style={{
-                    fontFamily: F.body,
-                    fontSize: '0.85rem',
-                    color: C.textMid,
-                    lineHeight: 1.8,
-                    margin: 0,
-                  }}
-                >
-                  {group.items.join(' · ')}
-                </p>
-              </motion.div>
-            ))}
-          </div>
+          {/* Tech stack — typewriter style */}
+          <Skills />
 
         </div>
       </section>
@@ -242,12 +181,46 @@ export default function About() {
   )
 }
 
+/* -- CountUp --------------------------------------------- */
+function CountUp({ target, suffix, active, delay }: { target: number; suffix: string; active: boolean; delay: number }) {
+  const [value, setValue] = useState(0)
+  const hasRun = useRef(false)
+
+  useEffect(() => {
+    if (!active || hasRun.current) return
+    hasRun.current = true
+
+    const duration = 1800
+    const startTime = performance.now() + delay * 1000
+    let rafId: number
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime
+      if (elapsed < 0) {
+        rafId = requestAnimationFrame(tick)
+        return
+      }
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 4)
+      setValue(Math.round(eased * target))
+      if (progress < 1) {
+        rafId = requestAnimationFrame(tick)
+      }
+    }
+
+    rafId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafId)
+  }, [active, target, delay])
+
+  return <>{value}{suffix}</>
+}
+
 /* -- Styles ---------------------------------------------- */
 const styles: Record<string, React.CSSProperties> = {
   bio: {
     fontFamily: F.body,
     fontSize: '0.9rem',
-    color: C.textMid,
+    color: 'var(--text-mid)',
     lineHeight: 1.85,
     fontWeight: 300,
     margin: 0,
@@ -258,9 +231,9 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: F.mono,
     fontSize: '0.75rem',
     letterSpacing: '0.06em',
-    color: C.accent,
+    color: 'var(--accent)',
     textDecoration: 'none',
-    border: `1px solid ${C.accentBorder}`,
+    border: '1px solid var(--accent-border)',
     padding: '0.5rem 1.1rem',
     borderRadius: '2px',
     background: 'transparent',
