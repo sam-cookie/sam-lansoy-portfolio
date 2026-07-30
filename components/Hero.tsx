@@ -1,22 +1,55 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import dynamic from 'next/dynamic'
 import DotGrid from './DotGrid'
+import { useTheme } from './ThemeProvider'
+
+const HeroCanvas = dynamic(() => import('./HeroCanvas'), { ssr: false })
 
 const NAME = 'Sam\nLansoy'
 
 export default function Hero() {
   const [charCount, setCharCount] = useState(0)
   const typingDone = charCount >= NAME.length
+  // null = not yet determined (avoids SSR/client mismatch on first render)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null)
+  const mouseRef = useRef({ x: 0, y: 0 })
+  const { theme } = useTheme()
+  const accentColor = theme === 'dark' ? '#5FA676' : '#7C3AED'
 
   useEffect(() => {
     if (charCount >= NAME.length) return
-    const delay =
-      charCount === 0 ? 600 : NAME[charCount - 1] === '\n' ? 220 : 85
+    const delay = charCount === 0 ? 600 : NAME[charCount - 1] === '\n' ? 220 : 85
     const timeout = setTimeout(() => setCharCount((c) => c + 1), delay)
     return () => clearTimeout(timeout)
   }, [charCount])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    setIsMobile(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      mouseRef.current.x = (e.clientX / window.innerWidth - 0.5) * 2
+      mouseRef.current.y = (e.clientY / window.innerHeight - 0.5) * 2
+    }
+    const onLeave = () => {
+      mouseRef.current.x = 0
+      mouseRef.current.y = 0
+    }
+    window.addEventListener('mousemove', onMove)
+    document.documentElement.addEventListener('mouseleave', onLeave)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      document.documentElement.removeEventListener('mouseleave', onLeave)
+    }
+  }, [])
 
   const typed = NAME.slice(0, charCount)
   const parts = typed.split('\n')
@@ -35,9 +68,34 @@ export default function Hero() {
         overflow: 'hidden',
       }}
     >
+      {/* z-index -1: 3D wireframe — only rendered after client confirms non-mobile */}
+      {isMobile === false && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: -1,
+            pointerEvents: 'none',
+          }}
+        >
+          <HeroCanvas
+            mouseRef={mouseRef}
+            color={accentColor}
+            canvasStyle={{
+              // Mask applied directly to the <canvas> element to avoid compositing artifacts.
+              // Transparent behind the text (left-center), smooth fade to opaque at edges/corners.
+              maskImage: 'radial-gradient(ellipse 48% 62% at 30% 50%, transparent 38%, black 76%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 48% 62% at 30% 50%, transparent 38%, black 76%)',
+            }}
+          />
+        </div>
+      )}
+
+      {/* z-index 0: dot grid — sits just above the 3D canvas */}
       <DotGrid />
-      <div style={{ maxWidth: '900px', width: '100%', position: 'relative', zIndex: 1 }}>
-        {/* Greeting */}
+
+      {/* z-index 2: text content */}
+      <div style={{ maxWidth: '900px', width: '100%', position: 'relative', zIndex: 2 }}>
         <motion.p
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -53,7 +111,6 @@ export default function Hero() {
           Hello, I&apos;m
         </motion.p>
 
-        {/* Name — typed character by character */}
         <h1
           style={{
             fontFamily: "'Instrument Serif', Georgia, serif",
@@ -92,7 +149,6 @@ export default function Hero() {
           )}
         </h1>
 
-        {/* Roles — waits for typing to finish */}
         <motion.p
           initial={{ opacity: 0, y: 24 }}
           animate={typingDone ? { opacity: 1, y: 0 } : {}}
@@ -108,7 +164,6 @@ export default function Hero() {
           Full Stack Developer &middot; Mobile Developer &middot; UI/UX Designer
         </motion.p>
 
-        {/* Bio */}
         <motion.p
           initial={{ opacity: 0, y: 24 }}
           animate={typingDone ? { opacity: 1, y: 0 } : {}}
@@ -127,7 +182,6 @@ export default function Hero() {
           new tech stacks, and listening to music.
         </motion.p>
 
-        {/* Links */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={typingDone ? { opacity: 1, y: 0 } : {}}
@@ -154,8 +208,6 @@ export default function Hero() {
     </section>
   )
 }
-
-/* -- Sub-components ------------------------------------ */
 
 function HeroLink({
   href,
@@ -185,8 +237,7 @@ function HeroLink({
         ((e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent)')
       }
       onMouseLeave={(e) =>
-        ((e.currentTarget as HTMLAnchorElement).style.color =
-          'var(--text-muted)')
+        ((e.currentTarget as HTMLAnchorElement).style.color = 'var(--text-muted)')
       }
     >
       {icon}

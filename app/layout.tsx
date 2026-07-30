@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import ThemeProvider from '@/components/ThemeProvider'
+import CustomCursor from '@/components/CustomCursor'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <CustomCursor />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

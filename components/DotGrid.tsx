@@ -2,11 +2,11 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react'
 
-const DOT_SPACING = 32
+const DOT_SPACING = 52
 const DOT_SIZE = 1.2
-const BASE_OPACITY = 0.12
-const GLOW_RADIUS = 120
-const GLOW_STRENGTH = 0.35
+const BASE_OPACITY = 0.1
+const GLOW_RADIUS = 110
+const GLOW_STRENGTH = 0.22
 const PARALLAX_STRENGTH = 8
 
 export default function DotGrid() {

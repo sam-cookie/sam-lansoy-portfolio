@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import TextScramble from './TextScramble'
@@ -63,7 +63,7 @@ const PROJECTS: Project[] = [
     title: 'Lost & Found',
     description: 'Community platform for recovering and reuniting lost items.',
     overview:
-      'A community-driven platform connecting people who\'ve lost items with those who\'ve found them. Built on the FERN stack with real-time Firebase updates, photo uploads, and location-based discovery.',
+      "A community-driven platform connecting people who've lost items with those who've found them. Built on the FERN stack with real-time Firebase updates, photo uploads, and location-based discovery.",
     tech: ['Firebase', 'Express', 'React', 'Node.js'],
     image: '/project/lostnfound.png',
     github: 'https://github.com/juliaconts/CMSC129-Lab1-ContrerasJL_LansoySL',
@@ -193,28 +193,44 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]['key']
 
-/* -- Fonts ------------------------------------------------ */
 const F = {
   serif: "'Instrument Serif', Georgia, serif",
   body: "'Sora', sans-serif",
   mono: "'JetBrains Mono', monospace",
 }
 
+/* -- Coverflow variants ----------------------------------- */
+const makeSwingVariants = (angle: number) => ({
+  enter: (dir: number) => ({
+    opacity: 0,
+    rotateY: dir * angle,
+    scale: 0.93,
+  }),
+  center: { opacity: 1, rotateY: 0, scale: 1 },
+  exit: (dir: number) => ({
+    opacity: 0,
+    rotateY: dir * -angle,
+    scale: 0.93,
+  }),
+})
+
+const DESKTOP_VARIANTS = makeSwingVariants(32)
+const MOBILE_VARIANTS = makeSwingVariants(16)
+
 /* -- Main Component --------------------------------------- */
 export default function Projects() {
   const ref = useRef<HTMLElement>(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
   const [activeTab, setActiveTab] = useState<TabKey>('web')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string>(
+    PROJECTS.find((p) => p.type === 'web')?.id ?? ''
+  )
+  const [direction, setDirection] = useState(1)
   const [isMobile, setIsMobile] = useState(false)
 
   const filtered = PROJECTS.filter((p) => p.type === activeTab)
-  const selectedProject = PROJECTS.find((p) => p.id === selectedId) ?? filtered[0] ?? null
-
-  useEffect(() => {
-    const first = PROJECTS.filter((p) => p.type === activeTab)[0]
-    setSelectedId(first?.id ?? null)
-  }, [activeTab])
+  const selectedProject = filtered.find((p) => p.id === selectedId) ?? filtered[0]
+  const selectedIndex = filtered.findIndex((p) => p.id === selectedProject?.id)
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)')
@@ -224,90 +240,145 @@ export default function Projects() {
     return () => mq.removeEventListener('change', handler)
   }, [])
 
+  const handleTabChange = useCallback(
+    (tab: TabKey) => {
+      const first = PROJECTS.find((p) => p.type === tab)
+      setDirection(1)
+      setActiveTab(tab)
+      setSelectedId(first?.id ?? '')
+    },
+    [],
+  )
+
+  const navigateTo = useCallback(
+    (newId: string) => {
+      const currentIdx = filtered.findIndex((p) => p.id === selectedId)
+      const newIdx = filtered.findIndex((p) => p.id === newId)
+      setDirection(newIdx >= currentIdx ? 1 : -1)
+      setSelectedId(newId)
+    },
+    [filtered, selectedId],
+  )
+
+  const goNext = useCallback(() => {
+    const idx = filtered.findIndex((p) => p.id === selectedProject?.id)
+    const next = filtered[(idx + 1) % filtered.length]
+    if (next) { setDirection(1); setSelectedId(next.id) }
+  }, [filtered, selectedProject])
+
+  const goPrev = useCallback(() => {
+    const idx = filtered.findIndex((p) => p.id === selectedProject?.id)
+    const prev = filtered[(idx - 1 + filtered.length) % filtered.length]
+    if (prev) { setDirection(-1); setSelectedId(prev.id) }
+  }, [filtered, selectedProject])
+
   return (
-    <>
-      <style>{`
-        @media (max-width: 767px) {
-          .projects-split { flex-direction: column !important; }
-          .projects-preview { display: none !important; }
-          .projects-mobile { display: block !important; }
-          .projects-desktop { display: none !important; }
-        }
-        @media (min-width: 768px) {
-          .projects-mobile { display: none !important; }
-        }
-      `}</style>
+    <section
+      id="projects"
+      ref={ref}
+      style={{
+        padding: '7rem clamp(1.5rem, 6vw, 5rem)',
+        background: 'var(--bg)',
+        transition: 'background 0.4s ease',
+      }}
+    >
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        {/* Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+        >
+          <TextScramble
+            text="Projects"
+            as="h2"
+            style={{
+              fontFamily: F.serif,
+              fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+              fontWeight: 400,
+              color: 'var(--text)',
+              lineHeight: 1.1,
+              margin: 0,
+            }}
+          />
+        </motion.div>
 
-      <section
-        id="projects"
-        ref={ref}
-        style={{
-          padding: '7rem clamp(1.5rem, 6vw, 5rem)',
-          background: 'var(--bg)',
-          transition: 'background 0.4s ease',
-        }}
-      >
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          {/* Title */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-          >
-            <TextScramble
-              text="Projects"
-              as="h2"
+        {/* Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.15 }}
+          style={{ display: 'flex', marginTop: '2rem' }}
+        >
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => handleTabChange(tab.key)}
               style={{
-                fontFamily: F.serif,
-                fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+                background: 'none',
+                border: 'none',
+                borderBottom:
+                  activeTab === tab.key
+                    ? '2px solid var(--accent)'
+                    : '2px solid transparent',
+                cursor: 'pointer',
+                fontFamily: F.body,
+                fontSize: '0.82rem',
                 fontWeight: 400,
-                color: 'var(--text)',
-                lineHeight: 1.1,
-                margin: 0,
+                letterSpacing: '0.04em',
+                color: activeTab === tab.key ? 'var(--accent)' : 'var(--text-muted)',
+                padding: '0.5rem 0',
+                marginRight: '2rem',
+                transition: 'color 0.25s, border-color 0.25s',
               }}
-            />
-          </motion.div>
+            >
+              {tab.label}
+            </button>
+          ))}
+        </motion.div>
 
-          {/* Tabs */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            style={{ display: 'flex', marginTop: '2rem' }}
-          >
-            {TABS.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  borderBottom:
-                    activeTab === tab.key
-                      ? '2px solid var(--accent)'
-                      : '2px solid transparent',
-                  cursor: 'pointer',
-                  fontFamily: F.body,
-                  fontSize: '0.82rem',
-                  fontWeight: 400,
-                  letterSpacing: '0.04em',
-                  color: activeTab === tab.key ? 'var(--accent)' : 'var(--text-muted)',
-                  padding: '0.5rem 0',
-                  marginRight: '2rem',
-                  transition: 'color 0.25s, border-color 0.25s',
-                }}
+        <div style={{ width: '100%', height: 1, background: 'var(--border)' }} />
+
+        {isMobile ? (
+          /* ---- Mobile: compact list + swipeable preview below ---- */
+          <div style={{ marginTop: '0.5rem' }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
               >
-                {tab.label}
-              </button>
-            ))}
-          </motion.div>
+                {filtered.map((project, index) => (
+                  <MobileProjectRow
+                    key={project.id}
+                    project={project}
+                    index={index}
+                    isSelected={selectedProject?.id === project.id}
+                    onSelect={() => navigateTo(project.id)}
+                  />
+                ))}
+              </motion.div>
+            </AnimatePresence>
 
-          {/* Divider */}
-          <div style={{ width: '100%', height: 1, background: 'var(--border)' }} />
-
-          {/* Desktop: Split layout */}
+            {selectedProject && (
+              <div style={{ marginTop: '1.5rem' }}>
+                <CoverflowPanel
+                  project={selectedProject}
+                  direction={direction}
+                  index={selectedIndex}
+                  total={filtered.length}
+                  onPrev={goPrev}
+                  onNext={goNext}
+                  isMobile
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          /* ---- Desktop: split list + sticky preview ---- */
           <div
-            className="projects-split"
             style={{
               display: 'flex',
               gap: '3.5rem',
@@ -315,8 +386,8 @@ export default function Projects() {
               marginTop: '0.5rem',
             }}
           >
-            {/* Left column: project list */}
-            <div className="projects-desktop" style={{ flex: '0 0 46%', minWidth: 0 }}>
+            {/* Left column */}
+            <div style={{ flex: '0 0 46%', minWidth: 0 }}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
@@ -331,16 +402,15 @@ export default function Projects() {
                       project={project}
                       index={index}
                       isSelected={selectedProject?.id === project.id}
-                      onSelect={() => setSelectedId(project.id)}
+                      onSelect={() => navigateTo(project.id)}
                     />
                   ))}
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* Right column: sticky preview */}
+            {/* Right column: sticky coverflow preview */}
             <div
-              className="projects-preview"
               style={{
                 flex: 1,
                 position: 'sticky',
@@ -350,42 +420,162 @@ export default function Projects() {
               }}
             >
               {selectedProject && (
-                <PreviewPanel project={selectedProject} />
+                <CoverflowPanel
+                  project={selectedProject}
+                  direction={direction}
+                  index={selectedIndex}
+                  total={filtered.length}
+                  onPrev={goPrev}
+                  onNext={goNext}
+                  isMobile={false}
+                />
               )}
             </div>
           </div>
-
-          {/* Mobile: accordion list */}
-          <div className="projects-mobile" style={{ display: 'none', marginTop: '0.5rem' }}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-              >
-                {filtered.map((project, index) => (
-                  <MobileAccordionRow
-                    key={project.id}
-                    project={project}
-                    index={index}
-                    isExpanded={selectedId === project.id}
-                    onToggle={() =>
-                      setSelectedId(selectedId === project.id ? null : project.id)
-                    }
-                  />
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      </section>
-    </>
+        )}
+      </div>
+    </section>
   )
 }
 
-/* -- Project Row (Desktop Left Column) -------------------- */
+/* -- Coverflow Preview Panel ----------------------------- */
+function CoverflowPanel({
+  project,
+  direction,
+  index,
+  total,
+  onPrev,
+  onNext,
+  isMobile,
+}: {
+  project: Project
+  direction: number
+  index: number
+  total: number
+  onPrev: () => void
+  onNext: () => void
+  isMobile: boolean
+}) {
+  const touchStartX = useRef(0)
+  const variants = isMobile ? MOBILE_VARIANTS : DESKTOP_VARIANTS
+  const dur = isMobile ? 0.22 : 0.35
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    if (Math.abs(dx) > 50) {
+      dx < 0 ? onNext() : onPrev()
+    }
+  }
+
+  return (
+    <div
+      style={{
+        borderTop: '3px solid var(--accent)',
+        background: 'var(--bg)',
+        borderRadius: '0 0 8px 8px',
+      }}
+    >
+      {/* Nav bar: arrows + counter */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0.65rem 1rem 0',
+        }}
+      >
+        <ArrowBtn onClick={onPrev} label="Previous project" direction="left" />
+        <span
+          style={{
+            fontFamily: F.mono,
+            fontSize: '0.6rem',
+            color: 'var(--text-muted)',
+            letterSpacing: '0.1em',
+          }}
+        >
+          {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+        </span>
+        <ArrowBtn onClick={onNext} label="Next project" direction="right" />
+      </div>
+
+      {/* 3D swing area */}
+      <div
+        style={{ perspective: '900px', overflow: 'hidden' }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div
+            key={project.id}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              duration: dur,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
+            style={{
+              padding: '1rem 1.2rem 1.5rem',
+              maxHeight: isMobile ? 'none' : 'calc(100vh - 180px)',
+              overflowY: isMobile ? 'visible' : 'auto',
+            }}
+          >
+            <ProjectDetail project={project} compact={isMobile} />
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
+
+/* -- Arrow Button ---------------------------------------- */
+function ArrowBtn({
+  onClick,
+  label,
+  direction,
+}: {
+  onClick: () => void
+  label: string
+  direction: 'left' | 'right'
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      style={{
+        background: 'none',
+        border: '1px solid var(--border)',
+        borderRadius: '2px',
+        color: 'var(--text-muted)',
+        fontFamily: F.mono,
+        fontSize: '0.7rem',
+        padding: '0.3rem 0.65rem',
+        cursor: 'pointer',
+        lineHeight: 1,
+        transition: 'color 0.2s, border-color 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        const b = e.currentTarget
+        b.style.color = 'var(--accent)'
+        b.style.borderColor = 'var(--accent-border)'
+      }}
+      onMouseLeave={(e) => {
+        const b = e.currentTarget
+        b.style.color = 'var(--text-muted)'
+        b.style.borderColor = 'var(--border)'
+      }}
+    >
+      {direction === 'left' ? '←' : '→'}
+    </button>
+  )
+}
+
+/* -- Desktop Project Row --------------------------------- */
 function ProjectRow({
   project,
   index,
@@ -403,10 +593,7 @@ function ProjectRow({
 
   return (
     <div
-      onMouseEnter={() => {
-        setHovered(true)
-        onSelect()
-      }}
+      onMouseEnter={() => { setHovered(true); onSelect() }}
       onMouseLeave={() => setHovered(false)}
       onClick={onSelect}
       style={{
@@ -415,7 +602,13 @@ function ProjectRow({
         borderBottom: '1px solid var(--border)',
         background: active ? 'var(--accent-soft)' : 'transparent',
         cursor: 'pointer',
-        transition: 'background 0.25s ease',
+        zIndex: isSelected ? 2 : 1,
+        // Elevation on selected: slight scale + shadow
+        transform: isSelected && !hovered ? 'scale(1.012) translateZ(0)' : 'scale(1)',
+        boxShadow: isSelected && !hovered
+          ? '0 2px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04)'
+          : 'none',
+        transition: 'background 0.25s ease, transform 0.3s ease, box-shadow 0.3s ease',
       }}
     >
       {/* Oversized faded number */}
@@ -454,61 +647,24 @@ function ProjectRow({
         }}
       />
 
-      {/* Content */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: index * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
         style={{ position: 'relative', zIndex: 1 }}
       >
-        {/* Title */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.6rem' }}>
-          <span
-            style={{
-              fontFamily: F.serif,
-              fontSize: '1.25rem',
-              fontWeight: 400,
-              color: 'var(--text)',
-            }}
-          >
+          <span style={{ fontFamily: F.serif, fontSize: '1.25rem', fontWeight: 400, color: 'var(--text)' }}>
             {project.title}
           </span>
-          <span
-            style={{
-              fontFamily: F.mono,
-              fontSize: '0.6rem',
-              color: 'var(--text-muted)',
-              letterSpacing: '0.06em',
-            }}
-          >
+          <span style={{ fontFamily: F.mono, fontSize: '0.6rem', color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
             {project.year}
           </span>
         </div>
-
-        {/* Description */}
-        <p
-          style={{
-            fontFamily: F.body,
-            fontSize: '0.78rem',
-            color: 'var(--text-muted)',
-            lineHeight: 1.6,
-            marginTop: '0.3rem',
-            marginBottom: '0.5rem',
-          }}
-        >
+        <p style={{ fontFamily: F.body, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: '0.3rem', marginBottom: '0.5rem' }}>
           {project.description}
         </p>
-
-        {/* Tech */}
-        <span
-          style={{
-            fontFamily: F.mono,
-            fontSize: '0.62rem',
-            color: active ? 'var(--accent)' : 'var(--text-muted)',
-            letterSpacing: '0.02em',
-            transition: 'color 0.25s ease',
-          }}
-        >
+        <span style={{ fontFamily: F.mono, fontSize: '0.62rem', color: active ? 'var(--accent)' : 'var(--text-muted)', letterSpacing: '0.02em', transition: 'color 0.25s ease' }}>
           {project.tech.join(' · ')}
         </span>
       </motion.div>
@@ -516,39 +672,62 @@ function ProjectRow({
   )
 }
 
-/* -- Preview Panel (Desktop Right Column) ----------------- */
-function PreviewPanel({ project }: { project: Project }) {
+/* -- Mobile Compact Row ---------------------------------- */
+function MobileProjectRow({
+  project,
+  index,
+  isSelected,
+  onSelect,
+}: {
+  project: Project
+  index: number
+  isSelected: boolean
+  onSelect: () => void
+}) {
+  const number = String(index + 1).padStart(2, '0')
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
+      onClick={onSelect}
       style={{
-        borderTop: '3px solid var(--accent)',
-        background: 'var(--bg)',
-        borderRadius: '0 0 8px 8px',
-        maxHeight: 'calc(100vh - 128px)',
-        overflowY: 'auto',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        padding: '0.9rem 0.75rem 0.9rem 1rem',
+        borderBottom: '1px solid var(--border)',
+        background: isSelected ? 'var(--accent-soft)' : 'transparent',
+        cursor: 'pointer',
+        transition: 'background 0.2s ease',
       }}
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={project.id}
-          initial={{ opacity: 0, x: 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -12 }}
-          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-          style={{ padding: '1.5rem' }}
-        >
-          <ProjectDetail project={project} />
-        </motion.div>
-      </AnimatePresence>
-    </div>
+      {/* Left accent */}
+      <div style={{
+        position: 'absolute', left: 0, top: '0.6rem', bottom: '0.6rem',
+        width: 3, background: 'var(--accent)', borderRadius: 2,
+        opacity: isSelected ? 1 : 0, transform: isSelected ? 'scaleY(1)' : 'scaleY(0.3)',
+        transition: 'opacity 0.2s, transform 0.2s',
+      }} />
+
+      <span style={{ fontFamily: F.mono, fontSize: '0.6rem', color: 'var(--text-muted)', flexShrink: 0 }}>
+        {number}
+      </span>
+      <span style={{ fontFamily: F.serif, fontSize: '1.05rem', fontWeight: 400, color: 'var(--text)', flex: 1 }}>
+        {project.title}
+      </span>
+      <span style={{ fontFamily: F.mono, fontSize: '0.58rem', color: isSelected ? 'var(--accent)' : 'var(--text-muted)', transition: 'color 0.2s' }}>
+        {project.year}
+      </span>
+    </motion.div>
   )
 }
 
-/* -- Project Detail (shared content) ---------------------- */
+/* -- Project Detail (card content) ----------------------- */
 function ProjectDetail({ project, compact }: { project: Project; compact?: boolean }) {
   return (
     <>
-      {/* Device Frame + Image */}
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -557,198 +736,64 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
         <DeviceFrame type={project.type} image={project.image} title={project.title} />
       </motion.div>
 
-      {/* Header: title + badge + year */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.6rem',
-          marginTop: '1.4rem',
-          flexWrap: 'wrap',
-        }}
-      >
-        <h3
-          style={{
-            fontFamily: F.serif,
-            fontSize: compact ? '1.1rem' : '1.35rem',
-            fontWeight: 400,
-            color: 'var(--text)',
-            margin: 0,
-          }}
-        >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '1.4rem', flexWrap: 'wrap' }}>
+        <h3 style={{ fontFamily: F.serif, fontSize: compact ? '1.1rem' : '1.35rem', fontWeight: 400, color: 'var(--text)', margin: 0 }}>
           {project.title}
         </h3>
-        <span
-          style={{
-            fontFamily: F.mono,
-            fontSize: '0.58rem',
-            color: 'var(--accent)',
-            background: 'var(--accent-soft)',
-            border: '1px solid var(--accent-border)',
-            padding: '0.15rem 0.5rem',
-            borderRadius: '2px',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-          }}
-        >
+        <span style={{ fontFamily: F.mono, fontSize: '0.58rem', color: 'var(--accent)', background: 'var(--accent-soft)', border: '1px solid var(--accent-border)', padding: '0.15rem 0.5rem', borderRadius: '2px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
           {project.type}
         </span>
-        <span
-          style={{
-            fontFamily: F.mono,
-            fontSize: '0.6rem',
-            color: 'var(--text-muted)',
-            letterSpacing: '0.04em',
-          }}
-        >
+        <span style={{ fontFamily: F.mono, fontSize: '0.6rem', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
           {project.year}
         </span>
       </div>
 
-      {/* Overview */}
-      <p
-        style={{
-          fontFamily: F.body,
-          fontSize: compact ? '0.8rem' : '0.85rem',
-          color: 'var(--text-mid)',
-          lineHeight: 1.75,
-          marginTop: '0.8rem',
-        }}
-      >
+      <p style={{ fontFamily: F.body, fontSize: compact ? '0.8rem' : '0.85rem', color: 'var(--text-mid)', lineHeight: 1.75, marginTop: '0.8rem' }}>
         {project.overview}
       </p>
 
-      {/* Highlights */}
-      <ul
-        style={{
-          listStyle: 'none',
-          padding: 0,
-          marginTop: '1rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.45rem',
-        }}
-      >
+      <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
         {project.highlights.map((h, i) => (
           <motion.li
             key={i}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.15 + i * 0.04 }}
-            style={{
-              fontFamily: F.body,
-              fontSize: compact ? '0.75rem' : '0.8rem',
-              color: 'var(--text-mid)',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '0.5rem',
-              lineHeight: 1.5,
-            }}
+            style={{ fontFamily: F.body, fontSize: compact ? '0.75rem' : '0.8rem', color: 'var(--text-mid)', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', lineHeight: 1.5 }}
           >
-            <span
-              style={{
-                color: 'var(--accent)',
-                fontSize: '0.5rem',
-                lineHeight: '1.5',
-                marginTop: '0.15em',
-                flexShrink: 0,
-              }}
-            >
-              ●
-            </span>
+            <span style={{ color: 'var(--accent)', fontSize: '0.5rem', lineHeight: '1.5', marginTop: '0.15em', flexShrink: 0 }}>●</span>
             {h}
           </motion.li>
         ))}
       </ul>
 
-      {/* Role */}
       <div style={{ marginTop: '1rem' }}>
-        <span
-          style={{
-            fontFamily: F.mono,
-            fontSize: '0.62rem',
-            color: 'var(--text-muted)',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-          }}
-        >
-          Role:
-        </span>{' '}
-        <span
-          style={{
-            fontFamily: F.mono,
-            fontSize: '0.62rem',
-            color: 'var(--text-mid)',
-            letterSpacing: '0.04em',
-          }}
-        >
-          {project.role}
-        </span>
+        <span style={{ fontFamily: F.mono, fontSize: '0.62rem', color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Role:</span>{' '}
+        <span style={{ fontFamily: F.mono, fontSize: '0.62rem', color: 'var(--text-mid)', letterSpacing: '0.04em' }}>{project.role}</span>
       </div>
 
-      {/* Tech pills */}
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.35rem',
-          marginTop: '1rem',
-        }}
-      >
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '1rem' }}>
         {project.tech.map((t, i) => (
           <motion.span
             key={t}
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: 0.2 + i * 0.03 }}
-            style={{
-              fontFamily: F.mono,
-              fontSize: '0.6rem',
-              color: 'var(--accent)',
-              background: 'var(--accent-soft)',
-              border: '1px solid var(--accent-border)',
-              padding: '0.2rem 0.55rem',
-              borderRadius: '2px',
-              letterSpacing: '0.03em',
-            }}
+            style={{ fontFamily: F.mono, fontSize: '0.6rem', color: 'var(--accent)', background: 'var(--accent-soft)', border: '1px solid var(--accent-border)', padding: '0.2rem 0.55rem', borderRadius: '2px', letterSpacing: '0.03em' }}
           >
             {t}
           </motion.span>
         ))}
       </div>
 
-      {/* GitHub link */}
       {project.github && (
         <a
           href={project.github}
           target="_blank"
           rel="noopener noreferrer"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            marginTop: '1.2rem',
-            fontFamily: F.mono,
-            fontSize: '0.7rem',
-            letterSpacing: '0.06em',
-            color: 'var(--accent)',
-            textDecoration: 'none',
-            border: '1px solid var(--accent-border)',
-            padding: '0.5rem 1rem',
-            borderRadius: '2px',
-            background: 'transparent',
-            transition: 'all 0.25s ease',
-          }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget
-            el.style.background = 'var(--accent-soft)'
-            el.style.borderColor = 'var(--accent)'
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget
-            el.style.background = 'transparent'
-            el.style.borderColor = 'var(--accent-border)'
-          }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginTop: '1.2rem', fontFamily: F.mono, fontSize: '0.7rem', letterSpacing: '0.06em', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent-border)', padding: '0.5rem 1rem', borderRadius: '2px', background: 'transparent', transition: 'all 0.25s ease' }}
+          onMouseEnter={(e) => { const el = e.currentTarget; el.style.background = 'var(--accent-soft)'; el.style.borderColor = 'var(--accent)' }}
+          onMouseLeave={(e) => { const el = e.currentTarget; el.style.background = 'transparent'; el.style.borderColor = 'var(--accent-border)' }}
         >
           View on GitHub →
         </a>
@@ -757,16 +802,8 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
   )
 }
 
-/* -- Device Frame ----------------------------------------- */
-function DeviceFrame({
-  type,
-  image,
-  title,
-}: {
-  type: 'web' | 'mobile' | 'game'
-  image: string
-  title: string
-}) {
+/* -- Device Frame ---------------------------------------- */
+function DeviceFrame({ type, image, title }: { type: 'web' | 'mobile' | 'game'; image: string; title: string }) {
   const frameRef = useRef<HTMLDivElement>(null)
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 })
   const [isHovered, setIsHovered] = useState(false)
@@ -776,23 +813,16 @@ function DeviceFrame({
     const rect = frameRef.current.getBoundingClientRect()
     const cx = rect.left + rect.width / 2
     const cy = rect.top + rect.height / 2
-    const maxAngle = 5
-    const rx = -((e.clientY - cy) / (rect.height / 2)) * maxAngle
-    const ry = ((e.clientX - cx) / (rect.width / 2)) * maxAngle
-    setTilt({ rx, ry })
-  }
-
-  const handleMouseLeave = () => {
-    setTilt({ rx: 0, ry: 0 })
-    setIsHovered(false)
+    setTilt({
+      rx: -((e.clientY - cy) / (rect.height / 2)) * 5,
+      ry: ((e.clientX - cx) / (rect.width / 2)) * 5,
+    })
   }
 
   const tiltStyle: React.CSSProperties = {
     transform: `perspective(800px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
     transition: isHovered ? 'transform 0.1s ease-out, box-shadow 0.25s ease' : 'transform 0.4s ease-out, box-shadow 0.4s ease',
-    boxShadow: isHovered
-      ? `${-tilt.ry * 2}px ${-tilt.rx * 2}px 30px rgba(0, 0, 0, 0.12)`
-      : '0 0 0 rgba(0, 0, 0, 0)',
+    boxShadow: isHovered ? `${-tilt.ry * 2}px ${-tilt.rx * 2}px 30px rgba(0,0,0,0.12)` : 'none',
   }
 
   if (type === 'web') {
@@ -801,230 +831,41 @@ function DeviceFrame({
         ref={frameRef}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          borderRadius: 8,
-          overflow: 'hidden',
-          border: '1px solid var(--border)',
-          background: 'var(--card-bg)',
-          ...tiltStyle,
-        }}
+        onMouseLeave={() => { setTilt({ rx: 0, ry: 0 }); setIsHovered(false) }}
+        style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--card-bg)', ...tiltStyle }}
       >
-        {/* Browser bar */}
-        <div
-          style={{
-            height: 32,
-            background: 'var(--card-bar)',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 12px',
-            gap: 6,
-            borderBottom: '1px solid var(--border)',
-          }}
-        >
+        <div style={{ height: 32, background: 'var(--card-bar)', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 6, borderBottom: '1px solid var(--border)' }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--dots-red)' }} />
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--dots-yellow)' }} />
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--dots-green)' }} />
-          <div
-            style={{
-              flex: 1,
-              marginLeft: 10,
-              height: 16,
-              borderRadius: 4,
-              background: 'var(--card-url-bg)',
-              display: 'flex',
-              alignItems: 'center',
-              paddingLeft: 8,
-            }}
-          >
-            <span
-              style={{
-                fontFamily: F.mono,
-                fontSize: '0.55rem',
-                color: 'var(--text-muted)',
-              }}
-            >
+          <div style={{ flex: 1, marginLeft: 10, height: 16, borderRadius: 4, background: 'var(--card-url-bg)', display: 'flex', alignItems: 'center', paddingLeft: 8 }}>
+            <span style={{ fontFamily: F.mono, fontSize: '0.55rem', color: 'var(--text-muted)' }}>
               {title.toLowerCase().replace(/\s+/g, '')}.app
             </span>
           </div>
         </div>
-        {/* Screenshot */}
         <div style={{ position: 'relative', width: '100%', aspectRatio: '16/10' }}>
-          <Image
-            src={image}
-            alt={title}
-            fill
-            sizes="(max-width: 768px) 100vw, 500px"
-            style={{ objectFit: 'cover', objectPosition: 'top' }}
-          />
+          <Image src={image} alt={title} fill sizes="(max-width: 768px) 100vw, 500px" style={{ objectFit: 'cover', objectPosition: 'top' }} />
         </div>
       </div>
     )
   }
 
-  // Phone frame for mobile / game
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <div
         ref={frameRef}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          width: '55%',
-          maxWidth: 200,
-          borderRadius: 20,
-          overflow: 'hidden',
-          border: '2px solid var(--phone-frame-border)',
-          background: 'var(--phone-frame-bg)',
-          padding: 6,
-          ...tiltStyle,
-        }}
+        onMouseLeave={() => { setTilt({ rx: 0, ry: 0 }); setIsHovered(false) }}
+        style={{ width: '55%', maxWidth: 200, borderRadius: 20, overflow: 'hidden', border: '2px solid var(--phone-frame-border)', background: 'var(--phone-frame-bg)', padding: 6, ...tiltStyle }}
       >
-        {/* Notch */}
-        <div
-          style={{
-            width: 50,
-            height: 4,
-            borderRadius: 2,
-            background: 'var(--phone-detail)',
-            margin: '4px auto 6px',
-          }}
-        />
-        {/* Screenshot */}
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            aspectRatio: '9/16',
-            borderRadius: 12,
-            overflow: 'hidden',
-          }}
-        >
-          <Image
-            src={image}
-            alt={title}
-            fill
-            sizes="200px"
-            style={{ objectFit: 'cover', objectPosition: 'top' }}
-          />
+        <div style={{ width: 50, height: 4, borderRadius: 2, background: 'var(--phone-detail)', margin: '4px auto 6px' }} />
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '9/16', borderRadius: 12, overflow: 'hidden' }}>
+          <Image src={image} alt={title} fill sizes="200px" style={{ objectFit: 'cover', objectPosition: 'top' }} />
         </div>
-        {/* Home bar */}
-        <div
-          style={{
-            width: 36,
-            height: 3,
-            borderRadius: 2,
-            background: 'var(--phone-detail)',
-            margin: '6px auto 2px',
-          }}
-        />
+        <div style={{ width: 36, height: 3, borderRadius: 2, background: 'var(--phone-detail)', margin: '6px auto 2px' }} />
       </div>
     </div>
-  )
-}
-
-/* -- Mobile Accordion Row --------------------------------- */
-function MobileAccordionRow({
-  project,
-  index,
-  isExpanded,
-  onToggle,
-}: {
-  project: Project
-  index: number
-  isExpanded: boolean
-  onToggle: () => void
-}) {
-  const number = String(index + 1).padStart(2, '0')
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay: index * 0.06, ease: [0.25, 0.1, 0.25, 1] }}
-      style={{ borderBottom: '1px solid var(--border)' }}
-    >
-      {/* Row header (tap to expand) */}
-      <div
-        onClick={onToggle}
-        style={{
-          position: 'relative',
-          padding: '1.4rem 0 1.4rem 1rem',
-          cursor: 'pointer',
-          background: isExpanded ? 'var(--accent-soft)' : 'transparent',
-          transition: 'background 0.25s ease',
-        }}
-      >
-        {/* Left accent */}
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: '0.6rem',
-            bottom: '0.6rem',
-            width: 3,
-            background: 'var(--accent)',
-            borderRadius: 2,
-            opacity: isExpanded ? 1 : 0,
-            transform: isExpanded ? 'scaleY(1)' : 'scaleY(0.3)',
-            transition: 'opacity 0.25s ease, transform 0.25s ease',
-          }}
-        />
-
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-          <span style={{ fontFamily: F.mono, fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-            {number}
-          </span>
-          <span style={{ fontFamily: F.serif, fontSize: '1.15rem', fontWeight: 400, color: 'var(--text)' }}>
-            {project.title}
-          </span>
-          <span style={{ fontFamily: F.mono, fontSize: '0.58rem', color: 'var(--text-muted)' }}>
-            {project.year}
-          </span>
-          <span
-            style={{
-              marginLeft: 'auto',
-              fontFamily: F.body,
-              fontSize: '0.85rem',
-              color: 'var(--accent)',
-              transform: isExpanded ? 'rotate(45deg)' : 'rotate(0deg)',
-              transition: 'transform 0.25s ease',
-            }}
-          >
-            +
-          </span>
-        </div>
-
-        <p
-          style={{
-            fontFamily: F.body,
-            fontSize: '0.75rem',
-            color: 'var(--text-muted)',
-            lineHeight: 1.5,
-            marginTop: '0.25rem',
-          }}
-        >
-          {project.description}
-        </p>
-      </div>
-
-      {/* Expandable content */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-            style={{ overflow: 'hidden' }}
-          >
-            <div style={{ padding: '0 0 1.5rem 1rem' }}>
-              <ProjectDetail project={project} compact />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
   )
 }
