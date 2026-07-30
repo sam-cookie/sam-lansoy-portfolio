@@ -6,6 +6,7 @@ import Contact from '@/components/Contact'
 import Footer from '@/components/Footer'
 import ScrollProgress from '@/components/ScrollProgress'
 import SectionDivider from '@/components/SectionDivider'
+import Chatbot from '@/components/Chatbot'
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
       <SectionDivider />
       <Contact />
       <Footer />
+      <Chatbot />
     </main>
   )
 }

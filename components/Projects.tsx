@@ -14,6 +14,7 @@ type Project = {
   tech: string[]
   image: string
   github?: string
+  live?: string
   type: 'web' | 'mobile' | 'game'
   highlights: string[]
   role: string
@@ -22,6 +23,25 @@ type Project = {
 
 /* -- Data ------------------------------------------------- */
 const PROJECTS: Project[] = [
+  {
+    id: 'memora',
+    title: 'Memora',
+    description: 'Meeting intelligence platform — transcribe recordings and extract action items, decisions, and risks.',
+    overview:
+      'Memora turns the chaos of meetings into structured, retrievable knowledge. Upload a recording or paste a transcript and Memora automatically transcribes via Groq Whisper, then uses AI to extract summaries, decisions, action items, risks, and follow-up questions — all stored in a searchable knowledge base with multi-tenant workspace support.',
+    tech: ['React', 'TypeScript', 'Supabase', 'Groq AI', 'Vite', 'Tailwind CSS'],
+    image: '/project/memora.png',
+    github: 'https://github.com/sam-cookie/memora',
+    live: 'https://memora-beige.vercel.app/',
+    type: 'web',
+    highlights: [
+      'Groq Whisper transcription with AI extraction of action items, decisions, and risks',
+      'Full-text search across all meetings with ⌘K command palette',
+      'Multi-tenant workspaces with role-based access enforced via Supabase RLS',
+    ],
+    role: 'Full Stack Developer',
+    year: '2025',
+  },
   {
     id: 'platemate',
     title: 'Platemate',
@@ -786,17 +806,33 @@ function ProjectDetail({ project, compact }: { project: Project; compact?: boole
         ))}
       </div>
 
-      {project.github && (
-        <a
-          href={project.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginTop: '1.2rem', fontFamily: F.mono, fontSize: '0.7rem', letterSpacing: '0.06em', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent-border)', padding: '0.5rem 1rem', borderRadius: '2px', background: 'transparent', transition: 'all 0.25s ease' }}
-          onMouseEnter={(e) => { const el = e.currentTarget; el.style.background = 'var(--accent-soft)'; el.style.borderColor = 'var(--accent)' }}
-          onMouseLeave={(e) => { const el = e.currentTarget; el.style.background = 'transparent'; el.style.borderColor = 'var(--accent-border)' }}
-        >
-          View on GitHub →
-        </a>
+      {(project.github || project.live) && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginTop: '1.2rem' }}>
+          {project.github && (
+            <a
+              href={project.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontFamily: F.mono, fontSize: '0.7rem', letterSpacing: '0.06em', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent-border)', padding: '0.5rem 1rem', borderRadius: '2px', background: 'transparent', transition: 'all 0.25s ease' }}
+              onMouseEnter={(e) => { const el = e.currentTarget; el.style.background = 'var(--accent-soft)'; el.style.borderColor = 'var(--accent)' }}
+              onMouseLeave={(e) => { const el = e.currentTarget; el.style.background = 'transparent'; el.style.borderColor = 'var(--accent-border)' }}
+            >
+              View on GitHub →
+            </a>
+          )}
+          {project.live && (
+            <a
+              href={project.live}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontFamily: F.mono, fontSize: '0.7rem', letterSpacing: '0.06em', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent-border)', padding: '0.5rem 1rem', borderRadius: '2px', background: 'transparent', transition: 'all 0.25s ease' }}
+              onMouseEnter={(e) => { const el = e.currentTarget; el.style.background = 'var(--accent-soft)'; el.style.borderColor = 'var(--accent)' }}
+              onMouseLeave={(e) => { const el = e.currentTarget; el.style.background = 'transparent'; el.style.borderColor = 'var(--accent-border)' }}
+            >
+              Live Demo →
+            </a>
+          )}
+        </div>
       )}
     </>
   )
