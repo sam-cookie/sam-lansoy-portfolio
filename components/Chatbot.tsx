@@ -7,11 +7,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 const T = {
   bg:        '#161b17',
   bgHead:    '#0f1410',
-  text:      '#c8d0c4',   // message body: warm light gray/cream
-  green:     '#6ee7a0',   // visitor prefix + $ prompt
-  purple:    '#c084fc',   // sam@ai prefix + typing cursor
-  blue:      '#93c5fd',   // ~/chat path segment (terminal convention)
-  dim:       '#4a5e4c',   // muted / secondary text
+  text:      '#c8d0c4',
+  green:     '#6ee7a0',
+  purple:    '#c084fc',
+  blue:      '#93c5fd',
+  dim:       '#4a5e4c',
   border:    'rgba(255, 255, 255, 0.07)',
   scrollbar: '#2a3d2e',
 }
@@ -26,14 +26,25 @@ type Message = {
 
 const genId = () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
 
+function SendIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  )
+}
+
 export default function Chatbot() {
-  const [open, setOpen]               = useState(false)
-  const [minimized, setMinimized]     = useState(false)
-  const [maximized, setMaximized]     = useState(false)
-  const [input, setInput]             = useState('')
-  const [loading, setLoading]         = useState(false)
-  const [inputFocused, setFocused]    = useState(false)
-  const [messages, setMessages]       = useState<Message[]>(() => [{
+  const [open, setOpen]             = useState(false)
+  const [minimized, setMinimized]   = useState(false)
+  const [maximized, setMaximized]   = useState(false)
+  const [input, setInput]           = useState('')
+  const [loading, setLoading]       = useState(false)
+  const [inputFocused, setFocused]  = useState(false)
+  const [isMobile, setIsMobile]     = useState(false)
+  const [keyboardOffset, setKbOff]  = useState(0)
+  const [messages, setMessages]     = useState<Message[]>([{
     id: 'init',
     role: 'assistant',
     content: "Hi! Ask me anything about Sam's background, projects, or tech stack.",
@@ -41,6 +52,27 @@ export default function Chatbot() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef       = useRef<HTMLInputElement>(null)
+
+  /* detect mobile viewport */
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 640)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  /* track virtual keyboard height via visualViewport */
+  useEffect(() => {
+    if (!isMobile) { setKbOff(0); return }
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => {
+      const diff = window.innerHeight - vv.height
+      setKbOff(diff > 60 ? diff : 0)
+    }
+    vv.addEventListener('resize', update)
+    return () => vv.removeEventListener('resize', update)
+  }, [isMobile])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -51,7 +83,6 @@ export default function Chatbot() {
     if (!open) { setMinimized(false); setMaximized(false) }
   }, [open])
 
-  // Re-focus input when restoring from minimized
   useEffect(() => {
     if (!minimized && open) setTimeout(() => inputRef.current?.focus(), 300)
   }, [minimized, open])
@@ -102,6 +133,13 @@ export default function Chatbot() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   }
 
+  /* panel bottom: lift above keyboard when it appears */
+  const panelBottom = isMobile
+    ? (keyboardOffset > 60 ? keyboardOffset + 12 : 72)
+    : 84
+
+  const canSend = !!input.trim() && !loading
+
   return (
     <>
       <style>{`
@@ -115,18 +153,8 @@ export default function Chatbot() {
         .term-messages::-webkit-scrollbar-track { background: transparent; }
         .term-messages::-webkit-scrollbar-thumb { background: ${T.scrollbar}; border-radius: 2px; }
 
-        .term-input                { color-scheme: dark; }
-        .term-input::placeholder   { color: ${T.dim}; font-family: ${MONO}; font-size: 0.775rem; }
-
-        @media (max-width: 640px) {
-          .chatbot-panel {
-            right: 12px !important;
-            left: 12px !important;
-            width: auto !important;
-            bottom: 80px !important;
-            max-height: 72vh !important;
-          }
-        }
+        .term-input { color-scheme: dark; }
+        .term-input::placeholder { color: ${T.dim}; font-family: ${MONO}; }
       `}</style>
 
       {/* ── FAB: squircle >_ button ── */}
@@ -139,9 +167,9 @@ export default function Chatbot() {
           position: 'fixed',
           bottom: 24,
           right: 24,
-          width: 48,
-          height: 48,
-          borderRadius: 16,           /* squircle */
+          width: 52,
+          height: 52,
+          borderRadius: 16,
           background: 'var(--accent)',
           border: 'none',
           cursor: 'pointer',
@@ -153,6 +181,7 @@ export default function Chatbot() {
           color: '#fff',
           fontFamily: MONO,
           transition: 'background 0.4s ease',
+          touchAction: 'manipulation',
         }}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -174,12 +203,7 @@ export default function Chatbot() {
               animate={{ rotate: 0,  opacity: 1 }}
               exit   ={{ rotate: -90, opacity: 0 }}
               transition={{ duration: 0.14 }}
-              style={{
-                fontSize: '0.88rem',
-                fontWeight: 500,
-                letterSpacing: '-0.02em',
-                lineHeight: 1,
-              }}
+              style={{ fontSize: '0.88rem', fontWeight: 500, letterSpacing: '-0.02em', lineHeight: 1 }}
             >
               {'>_'}
             </motion.span>
@@ -187,20 +211,40 @@ export default function Chatbot() {
         </AnimatePresence>
       </motion.button>
 
-      {/* ── Terminal panel ── */}
       <AnimatePresence>
+        {/* ── Mobile backdrop – tap to close ── */}
+        {open && isMobile && (
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.45)',
+              zIndex: 149,
+            }}
+          />
+        )}
+
+        {/* ── Terminal panel ── */}
         {open && (
           <motion.div
-            className="chatbot-panel"
-            initial={{ opacity: 0, scale: 0.92, y: 14 }}
+            key="panel"
+            initial={{ opacity: 0, scale: isMobile ? 1 : 0.92, y: isMobile ? 32 : 14 }}
             animate={{
               opacity: 1,
               scale: 1,
               y: 0,
-              width: maximized ? 620 : 420,
-              maxHeight: minimized ? 38 : maximized ? 680 : 520,
+              ...(isMobile ? {} : {
+                width: maximized ? 620 : 420,
+                maxHeight: minimized ? 38 : maximized ? 680 : 520,
+              }),
             }}
-            exit   ={{ opacity: 0, scale: 0.92, y: 14 }}
+            exit={{ opacity: 0, scale: isMobile ? 1 : 0.92, y: isMobile ? 32 : 14 }}
             transition={{
               duration: 0.22,
               ease: [0.25, 0.46, 0.45, 0.94],
@@ -209,25 +253,32 @@ export default function Chatbot() {
             }}
             style={{
               position: 'fixed',
-              bottom: 84,
-              right: 24,
-              maxWidth: 'calc(100vw - 48px)',
+              bottom: panelBottom,
+              right: isMobile ? 8 : 24,
+              left: isMobile ? 8 : 'auto',
+              maxWidth: isMobile ? 'none' : 'calc(100vw - 48px)',
+              /* mobile maxHeight via style (not animated), desktop via animate */
+              maxHeight: isMobile
+                ? (minimized ? 38 : 'min(82dvh, 580px)')
+                : undefined,
               background: T.bg,
               border: `1px solid ${T.border}`,
-              borderRadius: 10,
+              borderRadius: isMobile ? 14 : 10,
               zIndex: 150,
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
               boxShadow: '0 16px 60px rgba(0,0,0,0.5)',
-              transformOrigin: 'bottom right',
+              transformOrigin: isMobile ? 'bottom center' : 'bottom right',
+              /* smooth keyboard-driven repositioning */
+              transition: 'bottom 0.18s ease',
             }}
           >
 
             {/* ── Title bar ── */}
             <div
               style={{
-                height: 38,
+                height: isMobile ? 50 : 38,
                 background: T.bgHead,
                 borderBottom: `1px solid ${T.border}`,
                 display: 'flex',
@@ -238,26 +289,56 @@ export default function Chatbot() {
                 position: 'relative',
               }}
             >
-              {/* macOS traffic lights */}
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center', zIndex: 1 }}>
+              {/* Drag handle pill – mobile affordance */}
+              {isMobile && (
+                <div style={{
+                  position: 'absolute',
+                  top: 8,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: 36,
+                  height: 4,
+                  borderRadius: 2,
+                  background: T.dim,
+                  opacity: 0.7,
+                }} />
+              )}
+
+              {/* Traffic lights / close */}
+              <div style={{ display: 'flex', gap: isMobile ? 8 : 6, alignItems: 'center', zIndex: 1 }}>
                 <button
                   onClick={() => setOpen(false)}
                   aria-label="Close"
                   title="Close"
-                  style={{ width: 12, height: 12, borderRadius: '50%', background: '#FF5F57', border: 'none', cursor: 'pointer', padding: 0, display: 'block' }}
+                  style={{
+                    width: isMobile ? 22 : 12,
+                    height: isMobile ? 22 : 12,
+                    borderRadius: '50%',
+                    background: '#FF5F57',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    display: 'block',
+                    flexShrink: 0,
+                    touchAction: 'manipulation',
+                  }}
                 />
-                <button
-                  onClick={handleMinimize}
-                  aria-label={minimized ? 'Restore' : 'Minimize'}
-                  title={minimized ? 'Restore' : 'Minimize'}
-                  style={{ width: 12, height: 12, borderRadius: '50%', background: '#FFBD2E', border: 'none', cursor: 'pointer', padding: 0, display: 'block' }}
-                />
-                <button
-                  onClick={handleMaximize}
-                  aria-label={maximized ? 'Restore' : 'Maximize'}
-                  title={maximized ? 'Restore' : 'Maximize'}
-                  style={{ width: 12, height: 12, borderRadius: '50%', background: '#28CA42', border: 'none', cursor: 'pointer', padding: 0, display: 'block' }}
-                />
+                {!isMobile && (
+                  <>
+                    <button
+                      onClick={handleMinimize}
+                      aria-label={minimized ? 'Restore' : 'Minimize'}
+                      title={minimized ? 'Restore' : 'Minimize'}
+                      style={{ width: 12, height: 12, borderRadius: '50%', background: '#FFBD2E', border: 'none', cursor: 'pointer', padding: 0, display: 'block' }}
+                    />
+                    <button
+                      onClick={handleMaximize}
+                      aria-label={maximized ? 'Restore' : 'Maximize'}
+                      title={maximized ? 'Restore' : 'Maximize'}
+                      style={{ width: 12, height: 12, borderRadius: '50%', background: '#28CA42', border: 'none', cursor: 'pointer', padding: 0, display: 'block' }}
+                    />
+                  </>
+                )}
               </div>
 
               {/* Centered path label */}
@@ -266,7 +347,7 @@ export default function Chatbot() {
                 display: 'flex', justifyContent: 'center',
                 pointerEvents: 'none',
               }}>
-                <span style={{ fontFamily: MONO, fontSize: '0.64rem', letterSpacing: '0.01em' }}>
+                <span style={{ fontFamily: MONO, fontSize: isMobile ? '0.7rem' : '0.64rem', letterSpacing: '0.01em' }}>
                   <span style={{ color: T.green }}>sam</span>
                   <span style={{ color: T.dim }}>@portfolio</span>
                   <span style={{ color: T.dim, opacity: 0.55 }}>: </span>
@@ -281,7 +362,7 @@ export default function Chatbot() {
               style={{
                 flex: 1,
                 overflowY: 'auto',
-                padding: '14px 16px 6px',
+                padding: isMobile ? '16px 16px 8px' : '14px 16px 6px',
                 display: 'flex',
                 flexDirection: 'column',
                 scrollbarWidth: 'thin',
@@ -295,11 +376,10 @@ export default function Chatbot() {
                     key={msg.id}
                     style={{
                       fontFamily: MONO,
-                      fontSize: '0.775rem',
+                      fontSize: isMobile ? '0.84rem' : '0.775rem',
                       lineHeight: 1.75,
                       wordBreak: 'break-word',
                       whiteSpace: 'pre-wrap',
-                      /* blank line after each assistant turn, except the very last message */
                       marginBottom: msg.role === 'assistant' && !isLastMsg ? '0.9rem' : '0.05rem',
                     }}
                   >
@@ -322,7 +402,7 @@ export default function Chatbot() {
 
               {/* Typing indicator */}
               {loading && (
-                <div style={{ fontFamily: MONO, fontSize: '0.775rem', lineHeight: 1.75 }}>
+                <div style={{ fontFamily: MONO, fontSize: isMobile ? '0.84rem' : '0.775rem', lineHeight: 1.75 }}>
                   <span style={{ color: T.purple }}>sam@ai:</span>
                   {' '}
                   <span className="term-cursor" style={{ color: T.purple }}>▋</span>
@@ -336,7 +416,7 @@ export default function Chatbot() {
             <div
               style={{
                 borderTop: `1px solid ${T.border}`,
-                padding: '10px 16px',
+                padding: isMobile ? '12px 14px' : '10px 16px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
@@ -368,8 +448,11 @@ export default function Chatbot() {
                   onFocus={() => setFocused(true)}
                   onBlur={() => setFocused(false)}
                   disabled={loading}
-                  /* hide placeholder while focused so the blinking cursor reads cleanly */
                   placeholder={inputFocused ? '' : 'type your question…'}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   style={{
                     flex: 1,
                     width: '100%',
@@ -378,13 +461,13 @@ export default function Chatbot() {
                     outline: 'none',
                     color: T.text,
                     fontFamily: MONO,
-                    fontSize: '0.775rem',
+                    /* 16px on mobile prevents iOS auto-zoom on input focus */
+                    fontSize: isMobile ? '1rem' : '0.775rem',
                     lineHeight: 1.5,
-                    /* green caret for when user is mid-word */
                     caretColor: T.green,
                   }}
                 />
-                {/* Blinking block cursor — visible when focused and nothing typed yet */}
+                {/* Blinking block cursor – only when focused and empty */}
                 {inputFocused && !input && (
                   <span
                     className="term-cursor"
@@ -396,7 +479,7 @@ export default function Chatbot() {
                       transform: 'translateY(-50%)',
                       color: T.green,
                       fontFamily: MONO,
-                      fontSize: '0.775rem',
+                      fontSize: isMobile ? '1rem' : '0.775rem',
                       lineHeight: 1,
                       pointerEvents: 'none',
                     }}
@@ -405,6 +488,40 @@ export default function Chatbot() {
                   </span>
                 )}
               </div>
+
+              {/* ── Send button ──
+                  Mobile: always visible (dimmed when disabled)
+                  Desktop: fades in only when there's input */}
+              <motion.button
+                onClick={sendMessage}
+                disabled={!canSend}
+                aria-label="Send message"
+                whileTap={{ scale: 0.88 }}
+                animate={{
+                  opacity: canSend ? 1 : isMobile ? 0.3 : 0,
+                  scale: 1,
+                }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  flexShrink: 0,
+                  width: isMobile ? 40 : 28,
+                  height: isMobile ? 40 : 28,
+                  borderRadius: isMobile ? 11 : 7,
+                  background: T.green,
+                  border: 'none',
+                  cursor: canSend ? 'pointer' : 'default',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: T.bgHead,
+                  padding: 0,
+                  touchAction: 'manipulation',
+                  /* keep button in layout even when invisible on desktop */
+                  pointerEvents: canSend ? 'auto' : 'none',
+                }}
+              >
+                <SendIcon />
+              </motion.button>
             </div>
 
           </motion.div>
